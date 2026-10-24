@@ -66,3 +66,34 @@ export type PairWithCleanup = Pair & {
   cleanup_site: string;
   cleanup_date: string;
 };
+
+export type Photo = {
+  id: string;
+  pair_id: string;
+  side: "before" | "after";
+  stored_path: string;
+  mime: string;
+  bytes: number;
+  width: number;
+  height: number;
+  sha256: string;
+  original_sha256: string;
+  dhash: string;
+  blur_score: number;
+  exposure_clipped: number;
+  near_duplicate_of: string | null;
+  near_duplicate_distance: number | null;
+  people_visible: number;
+  uploaded_by: string;
+  superseded_at: string | null;
+  created_at: string;
+};
+
+export type PhotoSummary = Omit<Photo, "stored_path" | "uploaded_by">;
+
+export type KnownPhotoHash = {
+  side: "before" | "after";
+  dhash: string;
+  sha256: string;
+};
+

@@ -1,36 +1,19 @@
-import type { ReactNode } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ComparabilityChip } from "@/components/comparability-chip";
+import { PhotoUploader } from "@/components/photo-uploader";
+import { PreflightPanel } from "@/components/preflight-panel";
+import { PrivacyPanel } from "@/components/privacy-panel";
 import { Stepper } from "@/components/stepper";
 import { getPair } from "@/lib/cleanups";
 import { formatDate } from "@/lib/format";
+import {
+  getCurrentPhotos,
+  getCurrentPhotosForCleanup,
+  toPhotoSummary,
+} from "@/lib/photos";
 
 export const dynamic = "force-dynamic";
-
-function RailPanel({
-  label,
-  children,
-}: {
-  label: string;
-  children: ReactNode;
-}) {
-  return (
-    <section className="panel p-4">
-      <p className="field-label">{label}</p>
-      <div className="mt-3">{children}</div>
-    </section>
-  );
-}
-
-function RailRow({ term, value }: { term: string; value: string }) {
-  return (
-    <div className="flex items-baseline justify-between gap-3 border-b border-line py-1.5 last:border-0">
-      <span className="field-label">{term}</span>
-      <span className="mono text-[10px] text-ink">{value}</span>
-    </div>
-  );
-}
 
 export default async function PairWorkspacePage({
   params,
@@ -43,6 +26,23 @@ export default async function PairWorkspacePage({
   if (!pair) {
     notFound();
   }
+
+  const photos = getCurrentPhotos(pair.id);
+  const before = photos.find((photo) => photo.side === "before") ?? null;
+  const after = photos.find((photo) => photo.side === "after") ?? null;
+  const beforeSummary = before ? toPhotoSummary(before) : null;
+  const afterSummary = after ? toPhotoSummary(after) : null;
+  const pairPath = `/cleanups/${pair.cleanup_id}/pairs/${pair.id}`;
+  const currentStep = before ? 2 : 1;
+  const cleanupPhotos = getCurrentPhotosForCleanup(pair.cleanup_id);
+  const knownFor = (side: "before" | "after") =>
+    cleanupPhotos
+      .filter((photo) => !(photo.pair_id === pair.id && photo.side === side))
+      .map((photo) => ({
+        side: photo.side,
+        dhash: photo.dhash,
+        sha256: photo.sha256,
+      }));
 
   return (
     <div className="mx-auto w-full max-w-[1400px] px-6 py-6">
@@ -74,25 +74,27 @@ export default async function PairWorkspacePage({
         </div>
       </header>
 
-      <Stepper current={1} />
+      <Stepper current={currentStep} />
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
         <section aria-label="Photo evidence">
           <div className="grid gap-3 sm:grid-cols-2">
-            <div className="photo-slot px-4">
-              <span className="field-label">Before</span>
-              <span className="text-sm text-ink">No photo yet</span>
-              <span className="max-w-[15rem] text-xs leading-5 text-muted">
-                The claim source. Every marked region lives here.
-              </span>
-            </div>
-            <div className="photo-slot px-4">
-              <span className="field-label">After</span>
-              <span className="text-sm text-ink">No photo yet</span>
-              <span className="max-w-[15rem] text-xs leading-5 text-muted">
-                Comparison evidence. Never the source of a claim.
-              </span>
-            </div>
+            <PhotoUploader
+              pairId={pair.id}
+              side="before"
+              title="Before"
+              detail="The claim source. Every marked region lives here."
+              photo={beforeSummary}
+              knownPhotos={knownFor("before")}
+            />
+            <PhotoUploader
+              pairId={pair.id}
+              side="after"
+              title="After"
+              detail="Comparison evidence. Never the source of a claim."
+              photo={afterSummary}
+              knownPhotos={knownFor("after")}
+            />
           </div>
 
           <div className="panel mt-4 p-4">
@@ -108,37 +110,37 @@ export default async function PairWorkspacePage({
               signal will sit above it — a hint, not a verdict.
             </p>
           </div>
+
+          <div className="mt-4 border border-line bg-wash p-4">
+            <p className="field-label">Capture order</p>
+            <p className="mt-1 text-xs leading-5 text-muted">
+              Before is the source of every claim. After is comparison evidence
+              only. Replacing a photo re-runs every check and supersedes the old
+              row; a photo that sources a confirmed claim cannot be replaced.
+            </p>
+          </div>
         </section>
 
         <aside className="space-y-3" aria-label="Evidence checks">
-          <RailPanel label="Privacy">
-            <RailRow term="Metadata" value="Not checked" />
-            <RailRow term="People visible" value="Not set" />
-            <RailRow term="Public use" value="Blocked" />
-            <p className="mt-3 text-xs leading-5 text-muted">
-              EXIF and GPS are stripped before a photo is stored. The original
-              bytes are discarded.
-            </p>
-          </RailPanel>
+          <PrivacyPanel
+            before={beforeSummary}
+            after={afterSummary}
+            pairPath={pairPath}
+          />
 
-          <RailPanel label="Preflight">
-            <RailRow term="Resolution" value="—" />
-            <RailRow term="Blur" value="—" />
-            <RailRow term="Exposure" value="—" />
-            <RailRow term="Duplicate" value="—" />
-            <p className="mt-3 text-xs leading-5 text-muted">
-              Checks run when a photo is added. A warning never blocks the
-              upload; it stays attached to the photo.
-            </p>
-          </RailPanel>
+          <PreflightPanel before={beforeSummary} after={afterSummary} />
 
-          <RailPanel label="Claim">
-            <p className="text-sm leading-6 text-ink">No claims yet.</p>
+          <section className="panel p-4">
+            <p className="field-label">Claim</p>
+            <p className="mt-2 text-sm leading-6 text-ink">No claims yet.</p>
             <p className="mt-1 text-xs leading-5 text-muted">
               Mark a region on the before photo, then write one sentence about
               what you removed and from where.
             </p>
-          </RailPanel>
+            <p className="mt-3 border-t border-line pt-2 font-mono text-[10px] uppercase tracking-[0.1em] text-muted">
+              Region marking arrives in the next slice
+            </p>
+          </section>
         </aside>
       </div>
     </div>

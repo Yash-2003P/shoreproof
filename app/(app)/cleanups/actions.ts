@@ -8,6 +8,8 @@ import {
   getCleanup,
 } from "@/lib/cleanups";
 import { getCurrentUser } from "@/lib/session";
+import { setPhotoPeopleVisible } from "@/lib/photos";
+import { PhotoError } from "@/lib/privacy";
 import {
   cleanupSchema,
   consentSchema,
@@ -93,4 +95,40 @@ export async function createPair(formData: FormData): Promise<void> {
 
   revalidatePath(`/cleanups/${cleanupId}`);
   redirect(`/cleanups/${cleanupId}/pairs/${pair.id}`);
+}
+
+export async function setPeopleVisible(
+  _previous: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const user = await getCurrentUser();
+  if (!user) {
+    redirect("/setup");
+  }
+
+  const photoId = formData.get("photoId");
+  const pairPath = formData.get("pairPath");
+
+  if (typeof photoId !== "string") {
+    return { message: "Choose a photo first." };
+  }
+
+  try {
+    setPhotoPeopleVisible({
+      photoId,
+      peopleVisible: formData.get("peopleVisible") === "1",
+      actorId: user.id,
+    });
+  } catch (error) {
+    if (error instanceof PhotoError) {
+      return { message: error.message };
+    }
+    throw error;
+  }
+
+  if (typeof pairPath === "string" && pairPath.startsWith("/")) {
+    revalidatePath(pairPath);
+  }
+
+  return { message: "Privacy flag saved." };
 }

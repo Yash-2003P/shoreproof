@@ -20,6 +20,7 @@ __pycache__/
 .next/
 dist/
 out/
+*.tsbuildinfo
 
 # Local data, real photos, and imported manifests (never commit)
 /data/
