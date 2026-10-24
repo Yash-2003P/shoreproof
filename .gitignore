@@ -1,0 +1,38 @@
+# Devpost learning workspace — personal context, not for publication
+/devpost/learner-profile.md
+
+# Local agent tooling, not part of the product
+/.agents/
+/.claude/
+/agent/
+/skills-lock.json
+
+# Local credentials (never commit real values)
+.env
+.env.*
+!.env.example
+
+# Dependencies and build output
+node_modules/
+.venv/
+__pycache__/
+*.pyc
+.next/
+dist/
+out/
+
+# Local data, real photos, and imported manifests (never commit)
+/data/
+/imports/
+*.db
+*.db-shm
+*.db-wal
+
+# Fetched artifacts
+/public/models/
+/public/ort/
+
+# Test output
+/test-results/
+/playwright-report/
+/coverage/
