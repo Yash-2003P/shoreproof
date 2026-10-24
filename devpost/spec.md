@@ -31,7 +31,7 @@ PRD ref: `prd.md > The Core Journey`.
 4. **Open the record** → the server component loads the cleanup, its pairs, current photos, claim counts, and publication blockers → pair cards render.
 5. **Add a pair** → `createPair` inserts a pair row and a `pair.created` event.
 6. **Upload the before photo** → the browser runs provisional preflight → `POST /api/pairs/[pairId]/photos` sends the file → the server validates it, checks consent, sanitizes it with `sharp` (orientation, re-encode, metadata strip), computes `original_sha256`, `sha256`, dHash, blur, exposure, and near-duplicate distance → in one transaction, any previous current photo on that side is marked `superseded_at`, then the new `photos` row and `photo.uploaded` event are inserted → the workspace refreshes.
-7. **Draw a region and write the observation** → the region editor stores normalized coordinates in local state → `saveClaim` inserts or updates a draft `claims` row and a `claim.updated` event.
+7. **Draw a region and write the observation** → the region editor stores normalized coordinates in local state → `saveClaim` inserts a draft `claims` row and a `claim.created` event, or updates an existing draft and writes `claim.updated`.
 8. **Suggest candidates** → the detector worker loads the ONNX file, runs one inference, returns boxes → the browser posts the boxes to `saveSuggestions`, which inserts one `model_runs` row and its `suggestions` → dashed boxes render.
 9. **Accept or reject a box** → `acceptSuggestion` creates a draft claim with the box's region and a `source_suggestion_id`; `rejectSuggestion` records the reason. Both write events.
 10. **Upload the after photo** → same path as step 6 → the pair now has both sides.

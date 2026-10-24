@@ -164,6 +164,18 @@ export function getPair(
   return row ?? null;
 }
 
+export function getPairById(pairId: string): PairWithCleanup | null {
+  const row = getDb()
+    .prepare(
+      `SELECT p.*, c.site AS cleanup_site, c.date AS cleanup_date
+         FROM pairs p
+         JOIN cleanups c ON c.id = p.cleanup_id
+        WHERE p.id = ?`,
+    )
+    .get(pairId) as PairWithCleanup | undefined;
+  return row ?? null;
+}
+
 export function createPair(input: {
   cleanupId: string;
   label: string | null;

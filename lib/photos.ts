@@ -29,6 +29,7 @@ export type IngestPhotoInput = {
 
 function findDuplicate(input: {
   cleanupId: string;
+  pairId: string;
   sha256: string;
   dhash: string;
   excludePhotoId: string | null;
@@ -39,11 +40,16 @@ function findDuplicate(input: {
          FROM photos ph
          JOIN pairs p ON p.id = ph.pair_id
         WHERE p.cleanup_id = ?
+          AND p.id <> ?
           AND ph.superseded_at IS NULL
           AND (? IS NULL OR ph.id <> ?)`,
     )
-    .all(input.cleanupId, input.excludePhotoId, input.excludePhotoId) as
-    Candidate[];
+    .all(
+      input.cleanupId,
+      input.pairId,
+      input.excludePhotoId,
+      input.excludePhotoId,
+    ) as Candidate[];
 
   const exact = rows.find((row) => row.sha256 === input.sha256);
   if (exact) {
@@ -98,16 +104,20 @@ export async function ingestPhoto(input: IngestPhotoInput): Promise<Photo> {
     .get(pair.id, input.side) as Photo | undefined;
 
   if (current) {
-    const confirmed = db
+    const claimed = db
       .prepare(
-        `SELECT 1 FROM claims
-          WHERE photo_id = ? AND status = 'confirmed' LIMIT 1`,
+        `SELECT status FROM claims
+          WHERE photo_id = ?
+            AND status IN ('draft','pending','confirmed','insufficient')
+          LIMIT 1`,
       )
-      .get(current.id);
+      .get(current.id) as { status: string } | undefined;
 
-    if (confirmed) {
+    if (claimed) {
       throw new PhotoError(
-        "This photo is the source of a confirmed claim. Create a revision before replacing it.",
+        claimed.status === "draft"
+          ? "This photo is the source of a draft claim. Remove the draft before replacing it."
+          : "This photo is the source of a submitted claim. Create a revision before replacing it.",
         409,
       );
     }
@@ -117,6 +127,7 @@ export async function ingestPhoto(input: IngestPhotoInput): Promise<Photo> {
   const numbers = await preflightFromBuffer(sanitized.data);
   const duplicate = findDuplicate({
     cleanupId: pair.cleanup_id,
+    pairId: pair.id,
     sha256: sanitized.sha256,
     dhash: numbers.dhash,
     excludePhotoId: current?.id ?? null,

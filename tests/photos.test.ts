@@ -176,6 +176,80 @@ describe("ingestPhoto", () => {
     expect(photo.near_duplicate_of).toBeNull();
   });
 
+  it("does not call the other side of the same pair a duplicate", async () => {
+    const unique = await makeJpeg(1300, 850, 23);
+    const samePair = cleanups.createPair({
+      cleanupId,
+      label: "Same pair test",
+      actorId: userId,
+    });
+
+    const before = await photos.ingestPhoto({
+      pairId: samePair.id,
+      side: "before",
+      buffer: unique,
+      peopleVisible: false,
+      actorId: userId,
+    });
+    const after = await photos.ingestPhoto({
+      pairId: samePair.id,
+      side: "after",
+      buffer: unique,
+      peopleVisible: false,
+      actorId: userId,
+    });
+
+    expect(before.near_duplicate_of).toBeNull();
+    expect(after.near_duplicate_of).toBeNull();
+  });
+
+  it("refuses to replace a photo that sources a draft claim", async () => {
+    const draftPair = cleanups.createPair({
+      cleanupId,
+      label: "Draft claim test",
+      actorId: userId,
+    });
+    const current = await photos.ingestPhoto({
+      pairId: draftPair.id,
+      side: "before",
+      buffer: await makeJpeg(1400, 900, 31),
+      peopleVisible: false,
+      actorId: userId,
+    });
+
+    const now = new Date().toISOString();
+    dbModule
+      .getDb()
+      .prepare(
+        `INSERT INTO claims (
+           id, pair_id, photo_id, suggestion_id, x, y, w, h, text, category,
+           status, revision, supersedes_id, collector_id, decided_by,
+           decided_at, decision_note, created_at, updated_at
+         ) VALUES (?, ?, ?, NULL, 0.1, 0.1, 0.2, 0.2, ?, ?, 'draft',
+           1, NULL, ?, NULL, NULL, NULL, ?, ?)`,
+      )
+      .run(
+        ids.newId(),
+        draftPair.id,
+        current.id,
+        "A bottle was removed from the rock line.",
+        "Beverage Bottles (Plastic)",
+        userId,
+        now,
+        now,
+      );
+
+    await expect(
+      photos.ingestPhoto({
+        pairId: draftPair.id,
+        side: "before",
+        buffer: await makeJpeg(1200, 800, 9),
+        peopleVisible: false,
+        actorId: userId,
+      }),
+    ).rejects.toMatchObject({ status: 409 });
+  });
+
   it("refuses to replace a photo that sources a confirmed claim", async () => {
     const current = photos
       .getCurrentPhotos(pairId)

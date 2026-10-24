@@ -1,8 +1,13 @@
 import { z } from "zod";
+import { isIccCategory } from "./icc";
+import { isValidRegion } from "./region";
+import type { ClaimSummary } from "./types";
 
 export type ActionState = {
   errors?: Record<string, string>;
   message?: string;
+  claim?: ClaimSummary;
+  deletedClaimId?: string;
 };
 
 export function todayIso(): string {
@@ -52,6 +57,27 @@ export const pairLabelSchema = z
   .trim()
   .min(1, "Add a pair label.")
   .max(120, "Keep the pair label under 120 characters.");
+
+const coordinate = z
+  .number()
+  .refine((value) => Number.isFinite(value), "Draw a region on the photo.");
+
+export const claimDraftSchema = z.object({
+  text: z
+    .string()
+    .trim()
+    .min(1, "Write one sentence about what you removed.")
+    .max(280, "Keep the observation at 280 characters or fewer."),
+  category: z
+    .string()
+    .refine(isIccCategory, "Choose an ICC category, including Not sure."),
+  region: z
+    .object({ x: coordinate, y: coordinate, w: coordinate, h: coordinate })
+    .refine(isValidRegion, {
+      message:
+        "Draw a region on the before photo. The smallest region is 2% × 2%.",
+    }),
+});
 
 export function fieldErrors(error: z.ZodError): Record<string, string> {
   const errors: Record<string, string> = {};

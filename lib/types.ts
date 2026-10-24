@@ -97,3 +97,37 @@ export type KnownPhotoHash = {
   sha256: string;
 };
 
+export type ClaimStatus =
+  | "draft"
+  | "pending"
+  | "confirmed"
+  | "rejected"
+  | "insufficient"
+  | "superseded";
+
+export type Claim = {
+  id: string;
+  pair_id: string;
+  photo_id: string;
+  suggestion_id: string | null;
+  x: number | null;
+  y: number | null;
+  w: number | null;
+  h: number | null;
+  text: string;
+  category: string | null;
+  status: ClaimStatus;
+  revision: number;
+  supersedes_id: string | null;
+  collector_id: string;
+  decided_by: string | null;
+  decided_at: string | null;
+  decision_note: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ClaimSummary = Claim & {
+  collector_name: string;
+};
+
