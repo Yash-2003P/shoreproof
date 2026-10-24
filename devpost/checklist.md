@@ -5,11 +5,11 @@ status: approved
 
 # Build Checklist
 
-Build mode: to be chosen before slice 1 — fast is recommended for the Oct 26 deadline; learn is available and slower.
+Build mode: fast. I build and verify each slice; hands-on checkpoints after slices 3, 7, and 10.
 
 ## Slices
 
-- [ ] **1. You can set up a workspace and create a real cleanup**
+- [x] **1. You can set up a workspace and create a real cleanup**
   Becomes usable: A running app with first-run setup, an empty cleanup list, a create form with a consent attestation, and a cleanup record page. Nothing about photos yet.
   Why now: Bootstrapping, identity, and the real-data rule live inside the first usable behavior. There is no seed and no demo record, so the empty state is the real starting point.
   PRD ref: `prd.md > The Core Journey` (steps 1–2), `prd.md > Features and Behavior > First-Run Setup and People`, `prd.md > Features and Behavior > Cleanups`
@@ -132,3 +132,5 @@ Reflection:
 Activity mode:
 
 ## Revisions
+
+- 2026-10-24 — Build mode set to fast. Slice 1 complete: Next 16.4.3 scaffold, design tokens and fonts, SQLite schema and bootstrap, first-run setup, display-name cookie and switcher, settings/people, empty cleanup list, cleanup creation with consent attestation, cleanup record, and pair creation. Added a minimal pair/workspace shell so a new record has a next step before photo upload lands in slice 2. Verified with `npm run build`, 16 Vitest tests, a `tsx` data smoke, and a Playwright pass over setup → empty list → create → record → pair → add person → switch user with no console errors. Corrected the spec's React version to 19.3.0 and TypeScript to 5.9.3.

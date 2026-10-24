@@ -49,8 +49,8 @@ PRD ref: `prd.md > The Core Journey`.
 | Runtime | Node.js | 24.21.0 (installed) | Already on the machine; one language for app and scripts. | https://nodejs.org/docs |
 | Package manager | npm | 11.19.0 (installed) | `pnpm` is not installed; npm removes a setup step. Tradeoff: slower installs. | https://docs.npmjs.com |
 | Framework | Next.js App Router | 16.4.3 | Server components for reads, server actions for writes, route handlers for uploads and downloads. | https://nextjs.org/docs |
-| UI | React | 19.3.1 | Comes with Next; server/client component split fits the workspace. | https://react.dev |
-| Language | TypeScript | as pinned by `create-next-app` (7.0.2 current) | Types catch the claim/status mistakes that would corrupt the record. | https://www.typescriptlang.org/docs |
+| UI | React | 19.3.0 | Comes with Next; server/client component split fits the workspace. | https://react.dev |
+| Language | TypeScript | 5.9.3 (pinned by `create-next-app`) | Types catch the claim/status mistakes that would corrupt the record. | https://www.typescriptlang.org/docs |
 | Styling | Tailwind CSS | 4.3.3 | Fast custom styling; CSS-first `@theme` tokens, no config file. | https://tailwindcss.com/docs |
 | Database | SQLite via `better-sqlite3` | 13.0.3 | One file, synchronous queries, no ORM. Tradeoff: hand-written SQL. | https://github.com/WiseLibs/better-sqlite3 |
 | Validation | Zod | 4.6.7 | One schema for forms, server actions, and the import manifest. | https://zod.dev |
