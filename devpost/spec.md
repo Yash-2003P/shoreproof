@@ -334,9 +334,9 @@ Protocol:
 { type: 'error', message: string }
 ```
 
-Preprocessing (to verify, see Stack): draw the bitmap to an `OffscreenCanvas` at 640×640, RGB, CHW `Float32Array`, values 0–1. Letterbox with gray 114 padding first; if boxes are systematically offset, switch to a direct resize to match `preprocessor_config.json`.
+Preprocessing (verified on a real litter photo): the model's `preprocessor_config.json` sets `do_pad: false`, `do_resize: true`, `size: 640 × 640`, `do_rescale: true`, so the bitmap is drawn straight to a 640 × 640 `OffscreenCanvas` with **no letterbox padding**, then read as RGB, transposed to CHW, and scaled to 0–1. A side-by-side check on the same public-domain bottle photo found the bottle at 0.59 with a direct resize and **no box at all** with letterbox padding, so direct resize is the shipped path.
 
-Output parsing: accept `[1, 300, 6]` rows `[x1, y1, x2, y2, score, classId]`; also accept `[1, 6, 300]` and transpose. Filter `score ≥ 0.35`, clamp to the image, sort by score, keep the top 20. There is no NMS — YOLO26 is NMS-free.
+Output parsing (verified against the real ONNX file): this export returns **two** outputs, not one fused tensor — `logits [1, 300, 80]` holds raw class logits and `pred_boxes [1, 300, 4]` holds normalized `cx, cy, w, h`. The class score is `sigmoid(max logit)` over the 80 COCO classes; the box is `cx ± w/2`, already normalized to the input image, which maps straight back to the photo because the resize is a plain stretch. The parser also accepts the fused shape assumed in the first draft of this spec — `[1, 300, 6]` rows of `[x1, y1, x2, y2, score, classId]` and the transposed `[1, 6, 300]` — so a future export cannot silently break the panel. Filter `score ≥ 0.35`, clamp to the image, grow anything smaller than the 2% minimum region, sort by score, keep the top 20. There is no NMS: this YOLOS-style model is NMS-free.
 
 Mapping: `lib/detector/coco.ts` holds the 80 names; `lib/detector/icc.ts` maps only bottle → Beverage Bottles (Plastic), wine glass → Glass Beverage Bottles, cup/bowl → Cups & Plates, fork/knife/spoon → Cups & Plates with `mapping_uncertain = 1`. Everything else is `null`.
 
@@ -345,6 +345,8 @@ Talks to: `workers/detector.worker.ts`, `lib/detector/detect.ts`, `suggestion-pa
 PRD ref: `prd.md > Features and Behavior > AI suggestions`.
 
 Verify: on a real litter photo, at least one real bottle is detected and one false positive appears; the box outline lands on the object; the panel shows the model hash and runtime. If the worker fails to bundle, fall back to a plain `public/detector.worker.js` with the same protocol.
+
+**Verified in the browser:** a public-domain beach bottle photo (`File: A bottle found at the beach.jpg`, CC BY 2.0, test fixture only) was ingested through the app's own sanitizing upload path; the in-browser worker returned one box at confidence 0.66 that landed exactly on the bottle; accepting it created a draft claim with the same normalized region and the `suggestion_id`; a second run on another pair was rejected with a reason and created no claim; with the model file removed the panel showed "Detector not loaded. Check `npm run fetch-model`" and the manual marking path kept working.
 
 ### Region Editor and Compare Canvas
 

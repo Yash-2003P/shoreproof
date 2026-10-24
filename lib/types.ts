@@ -131,3 +131,32 @@ export type ClaimSummary = Claim & {
   collector_name: string;
 };
 
+export type SuggestionStatus = "open" | "accepted" | "rejected";
+
+export type Suggestion = {
+  id: string;
+  photo_id: string;
+  run_id: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  coco_id: number;
+  coco_class: string;
+  confidence: number;
+  icc_category: string | null;
+  mapping_uncertain: number;
+  status: SuggestionStatus;
+  edited: number;
+  reject_reason: string | null;
+  created_at: string;
+};
+
+export type SuggestionWithRun = Suggestion & {
+  model: string;
+  model_sha256: string;
+  runtime_ms: number;
+  input_width: number;
+  input_height: number;
+};
+

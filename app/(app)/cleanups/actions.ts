@@ -17,12 +17,20 @@ import {
 import { getCurrentUser } from "@/lib/session";
 import { setPhotoPeopleVisible } from "@/lib/photos";
 import { PhotoError } from "@/lib/privacy";
+import { DETECTOR_MODEL } from "@/lib/detector/model";
+import {
+  SuggestionError,
+  acceptSuggestion as acceptSuggestionRow,
+  rejectSuggestion as rejectSuggestionRow,
+  saveSuggestions as saveSuggestionRows,
+} from "@/lib/suggestions";
 import {
   claimDraftSchema,
   cleanupSchema,
   consentSchema,
   fieldErrors,
   pairLabelSchema,
+  suggestionsPayloadSchema,
   textOrEmpty,
   textOrNull,
   type ActionState,
@@ -244,4 +252,162 @@ export async function deleteClaimDraft(
     }
     throw error;
   }
+}
+
+export async function saveSuggestions(
+  _previous: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const user = await getCurrentUser();
+  if (!user) {
+    redirect("/setup");
+  }
+
+  let boxes: unknown = [];
+  try {
+    boxes = JSON.parse(textOrEmpty(formData.get("boxes")) || "[]");
+  } catch {
+    return { message: "The detector results could not be read." };
+  }
+
+  const parsed = suggestionsPayloadSchema.safeParse({
+    pairId: textOrEmpty(formData.get("pairId")),
+    photoId: textOrEmpty(formData.get("photoId")),
+    model: textOrEmpty(formData.get("model")),
+    modelSha256: textOrEmpty(formData.get("modelSha256")),
+    runtimeMs: Number(formData.get("runtimeMs")),
+    inputWidth: Number(formData.get("inputWidth")),
+    inputHeight: Number(formData.get("inputHeight")),
+    boxes,
+  });
+
+  if (!parsed.success) {
+    return {
+      errors: fieldErrors(parsed.error),
+      message: "The detector results could not be saved.",
+    };
+  }
+
+  if (
+    parsed.data.model !== DETECTOR_MODEL.name ||
+    parsed.data.modelSha256 !== DETECTOR_MODEL.sha256
+  ) {
+    return {
+      message:
+        "That result did not come from the pinned detector. Nothing was saved.",
+    };
+  }
+
+  try {
+    const suggestions = saveSuggestionRows(parsed.data);
+
+    const pair = getPairById(parsed.data.pairId);
+    if (pair) {
+      revalidatePath(`/cleanups/${pair.cleanup_id}/pairs/${pair.id}`);
+    }
+
+    return {
+      message:
+        suggestions.length === 0
+          ? "No candidate boxes. COCO classes only — mark the litter yourself."
+          : `${suggestions.length} candidate ${suggestions.length === 1 ? "box" : "boxes"} proposed.`,
+      suggestions,
+    };
+  } catch (error) {
+    if (error instanceof SuggestionError) {
+      return { message: error.message };
+    }
+    throw error;
+  }
+}
+
+export async function acceptSuggestion(
+  _previous: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const user = await getCurrentUser();
+  if (!user) {
+    redirect("/setup");
+  }
+
+  const suggestionId = textOrNull(formData.get("suggestionId"));
+  if (!suggestionId) {
+    return { message: "Choose a candidate box." };
+  }
+
+  const region = optionalRegion(formData);
+
+  try {
+    const claim = acceptSuggestionRow({
+      suggestionId,
+      actorId: user.id,
+      category: textOrEmpty(formData.get("category")),
+      region,
+    });
+
+    const pair = getPairById(claim.pair_id);
+    if (pair) {
+      revalidatePath(`/cleanups/${pair.cleanup_id}/pairs/${pair.id}`);
+    }
+
+    return {
+      message:
+        "Box accepted as a draft. Write the observation before it can be submitted.",
+      claim,
+    };
+  } catch (error) {
+    if (error instanceof SuggestionError) {
+      return { message: error.message };
+    }
+    throw error;
+  }
+}
+
+export async function rejectSuggestion(
+  _previous: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const user = await getCurrentUser();
+  if (!user) {
+    redirect("/setup");
+  }
+
+  const suggestionId = textOrNull(formData.get("suggestionId"));
+  if (!suggestionId) {
+    return { message: "Choose a candidate box." };
+  }
+
+  try {
+    rejectSuggestionRow({
+      suggestionId,
+      actorId: user.id,
+      reason: textOrEmpty(formData.get("reason")),
+    });
+    return { message: "Box rejected. It will not become a claim." };
+  } catch (error) {
+    if (error instanceof SuggestionError) {
+      return { message: error.message };
+    }
+    throw error;
+  }
+}
+
+function optionalRegion(formData: FormData) {
+  const raw = ["x", "y", "w", "h"].map((key) => formData.get(key));
+
+  if (
+    raw.some(
+      (value) => typeof value !== "string" || value.trim().length === 0,
+    )
+  ) {
+    return null;
+  }
+
+  const [x, y, w, h] = raw.map((value) => Number(value));
+
+  if (![x, y, w, h].every((value) => Number.isFinite(value))) {
+    return null;
+  }
+
+  return { x, y, w, h };
 }

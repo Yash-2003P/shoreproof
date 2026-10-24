@@ -5,7 +5,9 @@ import { PairWorkspace } from "@/components/pair-workspace";
 import { Stepper } from "@/components/stepper";
 import { getClaimsForPair } from "@/lib/claims";
 import { getPair } from "@/lib/cleanups";
+import { detectorModelAvailable } from "@/lib/detector/model-status";
 import { formatDate } from "@/lib/format";
+import { getSuggestionsForPhoto } from "@/lib/suggestions";
 import {
   getCurrentPhotos,
   getCurrentPhotosForCleanup,
@@ -32,6 +34,7 @@ export default async function PairWorkspacePage({
   const beforeSummary = before ? toPhotoSummary(before) : null;
   const afterSummary = after ? toPhotoSummary(after) : null;
   const claims = getClaimsForPair(pair.id);
+  const suggestions = before ? getSuggestionsForPhoto(before.id) : [];
   const currentStep = claims.length > 0 ? (after ? 3 : 2) : before ? 2 : 1;
   const knownPhotos = getCurrentPhotosForCleanup(pair.cleanup_id)
     .filter((photo) => photo.pair_id !== pair.id)
@@ -78,6 +81,8 @@ export default async function PairWorkspacePage({
         before={beforeSummary}
         after={afterSummary}
         initialClaims={claims}
+        initialSuggestions={suggestions}
+        modelAvailable={detectorModelAvailable()}
         knownBefore={knownPhotos}
         knownAfter={knownPhotos}
       />

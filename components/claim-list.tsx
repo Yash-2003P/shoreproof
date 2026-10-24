@@ -60,7 +60,9 @@ export function ClaimList({
                 </div>
 
                 <p className="mt-1.5 text-sm leading-5 text-ink">
-                  {claim.text}
+                  {claim.text.trim().length > 0
+                    ? claim.text
+                    : "Awaiting observation — write what was removed."}
                 </p>
 
                 <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">

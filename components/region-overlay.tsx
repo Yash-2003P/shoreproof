@@ -38,15 +38,27 @@ type DragState =
       handle: RegionHandle;
     };
 
+type SuggestionBox = {
+  id: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  label: string;
+  selected: boolean;
+};
+
 type RegionOverlayProps = {
   photo: { id: string; width: number; height: number };
   claims: ClaimSummary[];
+  suggestions?: SuggestionBox[];
   region: Region | null;
   selectedId: string | null;
   editable: boolean;
   onBeginNew: (region: Region) => void;
   onRegionChange: (region: Region) => void;
   onSelectClaim: (claim: ClaimSummary) => void;
+  onSelectSuggestion?: (id: string) => void;
 };
 
 const HANDLES: Array<{
@@ -93,12 +105,14 @@ function contains(region: Region, x: number, y: number): boolean {
 export function RegionOverlay({
   photo,
   claims,
+  suggestions = [],
   region,
   selectedId,
   editable,
   onBeginNew,
   onRegionChange,
   onSelectClaim,
+  onSelectSuggestion,
 }: RegionOverlayProps) {
   const imageRef = useRef<HTMLImageElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
@@ -170,6 +184,21 @@ export function RegionOverlay({
     return null;
   }
 
+  function suggestionAt(x: number, y: number): SuggestionBox | null {
+    for (let index = suggestions.length - 1; index >= 0; index -= 1) {
+      const suggestion = suggestions[index];
+      if (
+        x >= suggestion.x &&
+        x <= suggestion.x + suggestion.w &&
+        y >= suggestion.y &&
+        y <= suggestion.y + suggestion.h
+      ) {
+        return suggestion;
+      }
+    }
+    return null;
+  }
+
   function capture(event: ReactPointerEvent<HTMLDivElement>) {
     overlayRef.current?.setPointerCapture(event.pointerId);
   }
@@ -177,6 +206,13 @@ export function RegionOverlay({
   function handlePointerDown(event: ReactPointerEvent<HTMLDivElement>) {
     if (event.button !== 0) return;
     const point = pointFromEvent(event);
+
+    const suggestionHit = suggestionAt(point.x, point.y);
+    if (suggestionHit && !suggestionHit.selected && onSelectSuggestion) {
+      onSelectSuggestion(suggestionHit.id);
+      event.preventDefault();
+      return;
+    }
 
     if (editable && region && contains(region, point.x, point.y)) {
       dragRef.current = {
@@ -380,6 +416,25 @@ export function RegionOverlay({
               );
             })}
 
+            {suggestions.map((suggestion) => (
+              <rect
+                key={suggestion.id}
+                x={suggestion.x}
+                y={suggestion.y}
+                width={suggestion.w}
+                height={suggestion.h}
+                fill={
+                  suggestion.selected
+                    ? "rgba(228, 87, 46, 0.10)"
+                    : "rgba(228, 87, 46, 0.04)"
+                }
+                stroke="#e4572e"
+                strokeWidth={suggestion.selected ? 2 : 1.25}
+                strokeDasharray="4 3"
+                vectorEffect="non-scaling-stroke"
+              />
+            ))}
+
             {region ? (
               <rect
                 x={region.x}
@@ -416,6 +471,24 @@ export function RegionOverlay({
               </span>
             );
           })}
+
+          {suggestions.map((suggestion) => (
+            <span
+              key={suggestion.id}
+              aria-hidden="true"
+              className={`pointer-events-none absolute px-1 py-0.5 font-mono text-[9px] leading-none ${
+                suggestion.selected
+                  ? "bg-flag text-white"
+                  : "bg-paper/90 text-flag-ink"
+              }`}
+              style={{
+                left: `${suggestion.x * 100}%`,
+                top: `${suggestion.y * 100}%`,
+              }}
+            >
+              {suggestion.label}
+            </span>
+          ))}
 
           {editable && region
             ? HANDLES.map((item) => (

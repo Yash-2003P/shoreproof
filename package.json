@@ -6,6 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "postinstall": "node scripts/copy-ort.mjs",
     "lint": "eslint",
     "test": "vitest run",
     "test:e2e": "playwright test",
@@ -16,6 +17,7 @@
   "dependencies": {
     "better-sqlite3": "13.0.3",
     "next": "16.4.3",
+    "onnxruntime-web": "^1.30.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "sharp": "0.35.5",

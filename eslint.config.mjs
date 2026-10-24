@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Downloaded at install time, not source:
+    "public/ort/**",
+    "public/models/**",
+    "data/**",
   ]),
 ]);
 

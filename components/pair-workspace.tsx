@@ -7,6 +7,7 @@ import { PhotoUploader } from "@/components/photo-uploader";
 import { PreflightPanel } from "@/components/preflight-panel";
 import { PrivacyPanel } from "@/components/privacy-panel";
 import { RegionOverlay } from "@/components/region-overlay";
+import { SuggestionPanel } from "@/components/suggestion-panel";
 import {
   FULL_REGION,
   regionFromRow,
@@ -17,6 +18,7 @@ import type {
   KnownPhotoHash,
   PairWithCleanup,
   PhotoSummary,
+  SuggestionWithRun,
 } from "@/lib/types";
 
 type PairWorkspaceProps = {
@@ -24,6 +26,8 @@ type PairWorkspaceProps = {
   before: PhotoSummary | null;
   after: PhotoSummary | null;
   initialClaims: ClaimSummary[];
+  initialSuggestions: SuggestionWithRun[];
+  modelAvailable: boolean;
   knownBefore: KnownPhotoHash[];
   knownAfter: KnownPhotoHash[];
 };
@@ -33,11 +37,18 @@ export function PairWorkspace({
   before,
   after,
   initialClaims,
+  initialSuggestions,
+  modelAvailable,
   knownBefore,
   knownAfter,
 }: PairWorkspaceProps) {
   const [claims, setClaims] = useState<ClaimSummary[]>(initialClaims);
+  const [suggestions, setSuggestions] =
+    useState<SuggestionWithRun[]>(initialSuggestions);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedSuggestionId, setSelectedSuggestionId] = useState<
+    string | null
+  >(null);
   const [region, setRegion] = useState<Region | null>(null);
   const [text, setText] = useState("");
   const [category, setCategory] = useState("");
@@ -48,6 +59,9 @@ export function PairWorkspace({
   const regionEditable = selectedClaim
     ? selectedClaim.status === "draft"
     : true;
+  const openSuggestions = suggestions.filter(
+    (suggestion) => suggestion.status === "open",
+  );
 
   function beginNew(nextRegion: Region | null = null) {
     if (selectedClaim) {
@@ -99,6 +113,58 @@ export function PairWorkspace({
     }
   }
 
+  function selectSuggestion(suggestion: SuggestionWithRun) {
+    setSelectedSuggestionId(suggestion.id);
+    setSelectedId(null);
+    setText("");
+    setCategory(suggestion.icc_category ?? "");
+    setRegion({
+      x: suggestion.x,
+      y: suggestion.y,
+      w: suggestion.w,
+      h: suggestion.h,
+    });
+  }
+
+  function handleSuggestionsSaved(next: SuggestionWithRun[]) {
+    setSuggestions(next);
+    setSelectedSuggestionId(null);
+  }
+
+  function handleSuggestionAccepted(claim: ClaimSummary, suggestionId: string) {
+    setSuggestions((current) =>
+      current.map((suggestion) =>
+        suggestion.id === suggestionId
+          ? { ...suggestion, status: "accepted" }
+          : suggestion,
+      ),
+    );
+    setClaims((current) => {
+      const exists = current.some((item) => item.id === claim.id);
+      if (!exists) return [...current, claim];
+      return current.map((item) => (item.id === claim.id ? claim : item));
+    });
+    setSelectedSuggestionId(null);
+    setSelectedId(claim.id);
+    setRegion(regionFromRow(claim));
+    setText(claim.text);
+    setCategory(claim.category ?? "");
+  }
+
+  function handleSuggestionRejected(suggestionId: string) {
+    setSuggestions((current) =>
+      current.map((suggestion) =>
+        suggestion.id === suggestionId
+          ? { ...suggestion, status: "rejected" }
+          : suggestion,
+      ),
+    );
+    if (selectedSuggestionId === suggestionId) {
+      setSelectedSuggestionId(null);
+      setRegion(null);
+    }
+  }
+
   return (
     <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
       <section aria-label="Photo evidence">
@@ -113,12 +179,27 @@ export function PairWorkspace({
             <RegionOverlay
               photo={before}
               claims={claims}
+              suggestions={openSuggestions.map((suggestion) => ({
+                id: suggestion.id,
+                x: suggestion.x,
+                y: suggestion.y,
+                w: suggestion.w,
+                h: suggestion.h,
+                label: `${suggestion.coco_class} ${suggestion.confidence.toFixed(2)}`,
+                selected: suggestion.id === selectedSuggestionId,
+              }))}
               region={region}
               selectedId={selectedId}
               editable={regionEditable}
               onBeginNew={beginNew}
               onRegionChange={setRegion}
               onSelectClaim={selectClaim}
+              onSelectSuggestion={(id) => {
+                const suggestion = openSuggestions.find(
+                  (item) => item.id === id,
+                );
+                if (suggestion) selectSuggestion(suggestion);
+              }}
             />
             <p className="mt-2 text-xs leading-5 text-muted">
               Coordinates are stored relative to the photo, so the region
@@ -191,6 +272,19 @@ export function PairWorkspace({
         />
 
         <PreflightPanel before={before} after={after} />
+
+        <SuggestionPanel
+          pairId={pair.id}
+          photoId={before?.id ?? null}
+          modelAvailable={modelAvailable}
+          initialSuggestions={initialSuggestions}
+          selectedSuggestionId={selectedSuggestionId}
+          editedRegion={region}
+          onSuggestionsSaved={handleSuggestionsSaved}
+          onSuggestionAccepted={handleSuggestionAccepted}
+          onSuggestionRejected={handleSuggestionRejected}
+          onSelectSuggestion={selectSuggestion}
+        />
 
         <ClaimForm
           pairId={pair.id}

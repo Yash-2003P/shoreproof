@@ -1,13 +1,14 @@
 import { z } from "zod";
 import { isIccCategory } from "./icc";
 import { isValidRegion } from "./region";
-import type { ClaimSummary } from "./types";
+import type { ClaimSummary, SuggestionWithRun } from "./types";
 
 export type ActionState = {
   errors?: Record<string, string>;
   message?: string;
   claim?: ClaimSummary;
   deletedClaimId?: string;
+  suggestions?: SuggestionWithRun[];
 };
 
 export function todayIso(): string {
@@ -77,6 +78,26 @@ export const claimDraftSchema = z.object({
       message:
         "Draw a region on the before photo. The smallest region is 2% × 2%.",
     }),
+});
+
+export const detectorBoxSchema = z.object({
+  x: coordinate,
+  y: coordinate,
+  w: coordinate,
+  h: coordinate,
+  score: z.number().min(0).max(1),
+  cocoId: z.number().int().min(0).max(79),
+});
+
+export const suggestionsPayloadSchema = z.object({
+  pairId: z.string().min(1),
+  photoId: z.string().min(1),
+  model: z.string().min(1).max(80),
+  modelSha256: z.string().regex(/^[a-f0-9]{64}$/),
+  runtimeMs: z.number().int().min(0).max(600_000),
+  inputWidth: z.number().int().min(1).max(4096),
+  inputHeight: z.number().int().min(1).max(4096),
+  boxes: z.array(detectorBoxSchema).max(20),
 });
 
 export function fieldErrors(error: z.ZodError): Record<string, string> {
