@@ -5,6 +5,10 @@ import { PairWorkspace } from "@/components/pair-workspace";
 import { Stepper } from "@/components/stepper";
 import { getClaimsForPair } from "@/lib/claims";
 import { getPair } from "@/lib/cleanups";
+import {
+  getPairBlockers,
+  getPairFramingDetail,
+} from "@/lib/comparability";
 import { detectorModelAvailable } from "@/lib/detector/model-status";
 import { formatDate } from "@/lib/format";
 import { getSuggestionsForPhoto } from "@/lib/suggestions";
@@ -35,7 +39,19 @@ export default async function PairWorkspacePage({
   const afterSummary = after ? toPhotoSummary(after) : null;
   const claims = getClaimsForPair(pair.id);
   const suggestions = before ? getSuggestionsForPhoto(before.id) : [];
-  const currentStep = claims.length > 0 ? (after ? 3 : 2) : before ? 2 : 1;
+  const blockers = getPairBlockers(pair.id);
+  const framing = getPairFramingDetail(pair.id);
+  const pendingClaims = claims.filter((claim) => claim.status === "pending").length;
+  const submitted = pendingClaims > 0;
+  const currentStep = submitted
+    ? 5
+    : after && claims.length > 0 && pair.comparability
+      ? 4
+      : claims.length > 0
+        ? 3
+        : before
+          ? 2
+          : 1;
   const knownPhotos = getCurrentPhotosForCleanup(pair.cleanup_id)
     .filter((photo) => photo.pair_id !== pair.id)
     .map((photo) => ({
@@ -70,7 +86,13 @@ export default async function PairWorkspacePage({
         </div>
         <div className="flex items-center gap-2">
           <ComparabilityChip value={pair.comparability} />
-          <span className="chip text-muted">Not submitted</span>
+          <span className="chip text-muted">
+            {submitted
+              ? "In review"
+              : claims.length === 0
+                ? "No claims"
+                : `${claims.length} ${claims.length === 1 ? "claim" : "claims"}`}
+          </span>
         </div>
       </header>
 
@@ -83,6 +105,12 @@ export default async function PairWorkspacePage({
         initialClaims={claims}
         initialSuggestions={suggestions}
         modelAvailable={detectorModelAvailable()}
+        comparability={pair.comparability}
+        comparabilityReason={pair.comparability_reason}
+        framingScore={pair.framing_score}
+        framingWord={framing?.word ?? null}
+        blockers={blockers}
+        pendingClaims={pendingClaims}
         knownBefore={knownPhotos}
         knownAfter={knownPhotos}
       />

@@ -3,16 +3,20 @@
 import { useState } from "react";
 import { ClaimForm } from "@/components/claim-form";
 import { ClaimList } from "@/components/claim-list";
+import { CompareCanvas } from "@/components/compare-canvas";
+import { ComparabilityPanel } from "@/components/comparability-panel";
 import { PhotoUploader } from "@/components/photo-uploader";
 import { PreflightPanel } from "@/components/preflight-panel";
 import { PrivacyPanel } from "@/components/privacy-panel";
 import { RegionOverlay } from "@/components/region-overlay";
+import { SubmitPanel } from "@/components/submit-panel";
 import { SuggestionPanel } from "@/components/suggestion-panel";
 import {
   FULL_REGION,
   regionFromRow,
   type Region,
 } from "@/lib/region";
+import type { PairBlocker } from "@/lib/comparability";
 import type {
   ClaimSummary,
   KnownPhotoHash,
@@ -28,6 +32,12 @@ type PairWorkspaceProps = {
   initialClaims: ClaimSummary[];
   initialSuggestions: SuggestionWithRun[];
   modelAvailable: boolean;
+  comparability: "comparable" | "partial" | "not_comparable" | null;
+  comparabilityReason: string | null;
+  framingScore: number | null;
+  framingWord: string | null;
+  blockers: PairBlocker[];
+  pendingClaims: number;
   knownBefore: KnownPhotoHash[];
   knownAfter: KnownPhotoHash[];
 };
@@ -39,6 +49,12 @@ export function PairWorkspace({
   initialClaims,
   initialSuggestions,
   modelAvailable,
+  comparability,
+  comparabilityReason,
+  framingScore,
+  framingWord,
+  blockers,
+  pendingClaims,
   knownBefore,
   knownAfter,
 }: PairWorkspaceProps) {
@@ -239,19 +255,25 @@ export function PairWorkspace({
           />
         </div>
 
-        <div className="panel mt-4 p-4">
-          <div className="flex items-center justify-between gap-3">
-            <p className="field-label">Compare</p>
-            <span className="chip text-muted">Not ready</span>
+        {before && after ? (
+          <div className="mt-4">
+            <CompareCanvas before={before} after={after} />
           </div>
-          <div className="mt-3 h-1.5 w-full bg-wash">
-            <div className="h-1.5 w-1/2 bg-line" />
+        ) : (
+          <div className="panel mt-4 p-4">
+            <div className="flex items-center justify-between gap-3">
+              <p className="field-label">Compare</p>
+              <span className="chip text-muted">After photo needed</span>
+            </div>
+            <div className="mt-3 h-1.5 w-full bg-wash">
+              <div className="h-1.5 w-1/2 bg-line" />
+            </div>
+            <p className="mt-2 text-xs leading-5 text-muted">
+              The before/after wipe unlocks when both photos exist. A framing
+              signal will sit above it — a hint, not a verdict.
+            </p>
           </div>
-          <p className="mt-2 text-xs leading-5 text-muted">
-            The before/after wipe unlocks when both photos exist. A framing
-            signal will sit above it — a hint, not a verdict.
-          </p>
-        </div>
+        )}
 
         <div className="mt-4 border border-line bg-wash p-4">
           <p className="field-label">Capture order</p>
@@ -305,6 +327,21 @@ export function PairWorkspace({
           claims={claims}
           selectedId={selectedId}
           onSelect={selectClaim}
+        />
+
+        <ComparabilityPanel
+          pairId={pair.id}
+          state={comparability}
+          reason={comparabilityReason}
+          framingScore={framingScore}
+          framingWord={framingWord}
+          bothPhotosReady={Boolean(before && after)}
+        />
+
+        <SubmitPanel
+          pairId={pair.id}
+          blockers={blockers}
+          submittedClaims={pendingClaims}
         />
       </aside>
     </div>

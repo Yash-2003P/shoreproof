@@ -354,6 +354,8 @@ What it does: draws, moves, and resizes rectangles on the before photo; shows al
 
 Implementation: a relatively positioned image wrapper; an absolutely positioned SVG overlay in normalized coordinates (`viewBox="0 0 1 1"` with `preserveAspectRatio="none"`); pointer events for draw/move/resize; arrow keys nudge by 0.002; **Mark full photo** sets `0,0,1,1` as the keyboard fallback. Minimum region 0.02 × 0.02. The compare canvas clips the after image with `clip-path: inset(0 0 0 X%)` driven by a range input.
 
+**Layout decision (slice 5):** the marking surface and the wipe are two separate blocks in the workspace — the before photo with the region overlay stays on top, and the before/after wipe sits below the photo slots as its own `CompareCanvas`. Overlaying the after image on the before photo would hide the regions the collector is drawing, and the claim always points at the before photo anyway. The wipe divider is draggable with a pointer and movable with the arrow keys through its range control.
+
 The before image is the claim source. The after image is comparison evidence; the server rejects a claim pointing at an after photo.
 
 Talks to: `compare-canvas.tsx`, `region-editor.tsx`, `lib/region.ts`.
@@ -383,6 +385,8 @@ What it does: shows the framing signal and captures the human state.
 Framing signal: 8×8 mean-luminance grids for both photos; `gridSim = 1 - meanAbsDiff/255`; `aspectSim = 1 - |ratioA - ratioB| / max(ratioA, ratioB)`; `score = round(100 * (0.7 * gridSim + 0.3 * aspectSim))`. Words: ≥80 similar, 50–79 shifted, <50 very different. Stored with the sub-scores in `framing_detail`.
 
 State: **Comparable**, **Partially comparable**, **Not comparable**. A reason is required for the latter two. `Not comparable` disables Confirm in review until the state changes with a reason. A people-visible photo in the pair also disables Confirm.
+
+**Blocker levels (slice 5):** `getPairBlockers` returns two levels. *Blockers* stop a pair from being submitted: a missing before or after photo, no comparability decision, no claims, or a claim missing its region, observation, or category. *Warnings* do not stop submission but stop a later confirmation: a people-visible current photo and a `Not comparable` state. This matches the PRD, which ties people-visible to confirmation, export, and publishing rather than to submission — the workspace shows the warning before the collector sends the pair to a reviewer.
 
 Talks to: `comparability-panel.tsx`, `lib/framing.ts`, `setComparability` action.
 

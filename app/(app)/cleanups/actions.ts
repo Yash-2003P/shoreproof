@@ -19,6 +19,15 @@ import { setPhotoPeopleVisible } from "@/lib/photos";
 import { PhotoError } from "@/lib/privacy";
 import { DETECTOR_MODEL } from "@/lib/detector/model";
 import {
+  ComparabilityError,
+  COMPARABILITY_LABELS,
+  setComparability as setComparabilityRow,
+} from "@/lib/comparability";
+import {
+  SubmissionError,
+  submitPair as submitPairRows,
+} from "@/lib/submission";
+import {
   SuggestionError,
   acceptSuggestion as acceptSuggestionRow,
   rejectSuggestion as rejectSuggestionRow,
@@ -27,6 +36,7 @@ import {
 import {
   claimDraftSchema,
   cleanupSchema,
+  comparabilityStateSchema,
   consentSchema,
   fieldErrors,
   pairLabelSchema,
@@ -410,4 +420,80 @@ function optionalRegion(formData: FormData) {
   }
 
   return { x, y, w, h };
+}
+
+export async function setComparability(
+  _previous: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const user = await getCurrentUser();
+  if (!user) {
+    redirect("/setup");
+  }
+
+  const pairId = textOrNull(formData.get("pairId"));
+  const parsedState = comparabilityStateSchema.safeParse(
+    textOrEmpty(formData.get("state")),
+  );
+
+  if (!pairId || !parsedState.success) {
+    return { message: "Choose a comparability state." };
+  }
+
+  try {
+    const result = await setComparabilityRow({
+      pairId,
+      state: parsedState.data,
+      reason: textOrNull(formData.get("reason")),
+      actorId: user.id,
+    });
+
+    const pair = getPairById(pairId);
+    if (pair) {
+      revalidatePath(`/cleanups/${pair.cleanup_id}/pairs/${pair.id}`);
+    }
+
+    return {
+      message: `Comparability set to ${COMPARABILITY_LABELS[result.state]}. Framing signal ${result.score}/100 · ${result.word}.`,
+    };
+  } catch (error) {
+    if (error instanceof ComparabilityError) {
+      return { message: error.message };
+    }
+    throw error;
+  }
+}
+
+export async function submitPair(
+  _previous: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const user = await getCurrentUser();
+  if (!user) {
+    redirect("/setup");
+  }
+
+  const pairId = textOrNull(formData.get("pairId"));
+  if (!pairId) {
+    return { message: "Open the pair workspace to submit." };
+  }
+
+  try {
+    const result = submitPairRows({ pairId, actorId: user.id });
+
+    const pair = getPairById(pairId);
+    if (pair) {
+      revalidatePath(`/cleanups/${pair.cleanup_id}/pairs/${pair.id}`);
+      revalidatePath(`/cleanups/${pair.cleanup_id}`);
+    }
+
+    return {
+      message: `Submitted ${result.claims.length} ${result.claims.length === 1 ? "claim" : "claims"} for review.`,
+    };
+  } catch (error) {
+    if (error instanceof SubmissionError) {
+      return { message: error.message };
+    }
+    throw error;
+  }
 }

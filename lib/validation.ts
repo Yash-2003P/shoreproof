@@ -80,6 +80,12 @@ export const claimDraftSchema = z.object({
     }),
 });
 
+export const comparabilityStateSchema = z.enum([
+  "comparable",
+  "partial",
+  "not_comparable",
+]);
+
 export const detectorBoxSchema = z.object({
   x: coordinate,
   y: coordinate,

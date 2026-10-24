@@ -112,7 +112,7 @@ export function PhotoUploader({
     : "none";
 
   return (
-    <section className="panel overflow-hidden">
+    <section className="panel overflow-hidden" aria-label={`${title} photo`}>
       <div
         className={`relative flex aspect-[4/3] items-center justify-center bg-wash transition-colors ${
           dragActive ? "bg-tide/10 ring-2 ring-inset ring-tide" : ""
