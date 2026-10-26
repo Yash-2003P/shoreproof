@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { AppNav } from "@/components/app-nav";
+import { LocalModeBanner } from "@/components/local-mode-banner";
 import { UserSwitcher } from "@/components/user-switcher";
 import { Wordmark } from "@/components/wordmark";
 import { pendingReviewCount } from "@/lib/queue.server";
@@ -34,6 +35,11 @@ export function AppShell({
           </div>
         </div>
       </header>
+
+      {process.env.NODE_ENV === "production" &&
+      !process.env.WORKSPACE_PASSPHRASE ? (
+        <LocalModeBanner />
+      ) : null}
 
       <main id="main" className="flex-1">
         {children}

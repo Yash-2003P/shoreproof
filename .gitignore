@@ -37,4 +37,5 @@ out/
 /test-results/
 /playwright-report/
 /coverage/
+/.e2e-data/
 .next-dev.log

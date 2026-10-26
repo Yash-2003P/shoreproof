@@ -1,8 +1,13 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getCurrentUser, setCurrentUser } from "@/lib/session";
+import {
+  WORKSPACE_COOKIE,
+  workspaceAuthEnabled,
+} from "@/lib/workspace-auth";
 import { countUsers, createUser, getUser, getUserByDisplayName } from "@/lib/users";
 import {
   fieldErrors,
@@ -91,4 +96,14 @@ export async function switchUser(formData: FormData): Promise<void> {
       : "/cleanups";
 
   redirect(target);
+}
+
+/**
+ * Clears the workspace passphrase cookie. It does not change the configured
+ * passphrase or any record; it only locks this browser.
+ */
+export async function lockWorkspace(): Promise<void> {
+  const store = await cookies();
+  store.delete(WORKSPACE_COOKIE);
+  redirect(workspaceAuthEnabled() ? "/login" : "/cleanups");
 }

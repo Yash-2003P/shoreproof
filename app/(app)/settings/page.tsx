@@ -1,10 +1,12 @@
 import { redirect } from "next/navigation";
 import { PageHeader } from "@/components/page-header";
 import { PersonForm } from "@/components/person-form";
+import { lockWorkspace } from "@/app/actions";
 import { getCurrentUser } from "@/lib/session";
 import { roleLabel } from "@/lib/status";
 import { formatDate } from "@/lib/format";
 import { listUsers } from "@/lib/users";
+import { workspaceAuthEnabled } from "@/lib/workspace-auth";
 
 export const dynamic = "force-dynamic";
 
@@ -105,13 +107,35 @@ export default async function SettingsPage() {
           </div>
 
           <div className="panel p-5">
-            <h2 className="panel-title">Hosted use</h2>
-            <p className="mt-2 text-sm leading-6 text-muted">
-              A hosted workspace must set{" "}
-              <span className="mono text-xs">WORKSPACE_PASSPHRASE</span> and{" "}
-              <span className="mono text-xs">AUTH_SECRET</span>. The public page
-              stays public by design.
-            </p>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <h2 className="panel-title">Hosted use</h2>
+                <p className="mt-2 text-sm leading-6 text-muted">
+                  A hosted workspace must set{" "}
+                  <span className="mono text-xs">WORKSPACE_PASSPHRASE</span> and{" "}
+                  <span className="mono text-xs">AUTH_SECRET</span>. The public
+                  page stays public by design.
+                </p>
+              </div>
+              <span
+                className={`chip ${
+                  workspaceAuthEnabled() ? "chip-tide" : "text-muted"
+                }`}
+              >
+                {workspaceAuthEnabled() ? "Passphrase on" : "Passphrase off"}
+              </span>
+            </div>
+            {workspaceAuthEnabled() ? (
+              <form action={lockWorkspace} className="mt-4">
+                <button type="submit" className="btn btn-ghost">
+                  Lock this browser
+                </button>
+                <p className="mt-2 text-xs leading-5 text-muted">
+                  Clears the workspace cookie. The passphrase and every record
+                  stay unchanged.
+                </p>
+              </form>
+            ) : null}
           </div>
         </aside>
       </div>
