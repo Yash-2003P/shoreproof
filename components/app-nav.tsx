@@ -5,10 +5,11 @@ import { usePathname } from "next/navigation";
 
 const items = [
   { href: "/cleanups", label: "Cleanups" },
+  { href: "/review", label: "Review" },
   { href: "/settings", label: "Settings" },
 ];
 
-export function AppNav() {
+export function AppNav({ reviewCount }: { reviewCount?: number }) {
   const pathname = usePathname();
 
   return (
@@ -29,6 +30,11 @@ export function AppNav() {
             }`}
           >
             {item.label}
+            {item.href === "/review" && reviewCount && reviewCount > 0 ? (
+              <span className="ml-1.5 border border-flag/60 px-1 text-flag-ink">
+                {reviewCount}
+              </span>
+            ) : null}
           </Link>
         );
       })}

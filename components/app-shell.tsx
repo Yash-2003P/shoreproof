@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { AppNav } from "@/components/app-nav";
 import { UserSwitcher } from "@/components/user-switcher";
 import { Wordmark } from "@/components/wordmark";
+import { pendingReviewCount } from "@/lib/queue.server";
 import type { User } from "@/lib/types";
 
 export function AppShell({
@@ -13,12 +14,14 @@ export function AppShell({
   users: User[];
   children: ReactNode;
 }) {
+  const reviewCount = pendingReviewCount();
+
   return (
     <div className="flex min-h-screen flex-col">
       <header className="border-t-2 border-tide border-b border-line bg-salt">
         <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center gap-x-8 gap-y-3 px-6 py-4">
           <Wordmark />
-          <AppNav />
+          <AppNav reviewCount={reviewCount} />
           <div className="ml-auto flex items-center gap-4">
             <span className="hidden font-mono text-[9px] uppercase tracking-[0.14em] text-muted md:inline">
               Local workspace

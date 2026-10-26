@@ -86,6 +86,31 @@ export const comparabilityStateSchema = z.enum([
   "not_comparable",
 ]);
 
+export const decisionSchema = z.object({
+  decision: z.enum(["confirm", "reject", "insufficient"]),
+  note: z
+    .string()
+    .trim()
+    .max(500, "Keep the note under 500 characters.")
+    .optional(),
+});
+
+export const editConfirmSchema = z.object({
+  text: z
+    .string()
+    .trim()
+    .min(1, "Write one sentence about what was removed.")
+    .max(280, "Keep the observation at 280 characters or fewer."),
+  category: z
+    .string()
+    .refine(isIccCategory, "Choose an ICC category, including Not sure."),
+  note: z
+    .string()
+    .trim()
+    .max(500, "Keep the note under 500 characters.")
+    .optional(),
+});
+
 export const detectorBoxSchema = z.object({
   x: coordinate,
   y: coordinate,

@@ -402,7 +402,7 @@ Priority (`lib/queue.ts`, lower runs first): `no_region` 10, `not_comparable` 20
 
 Flags: no region; pair `not_comparable`; either current photo in the pair has `people_visible = 1`; photo `near_duplicate_of` set; regex `\b(entire|all|none|every|completely|fully|clean)\b`; long edge < 1280; reviewer id equals collector id; `suggestion_id` set and `suggestions.edited = 0`.
 
-Talks to: `app/(app)/review/page.tsx`, `app/(app)/review/[claimId]/page.tsx`, `review-queue.tsx`, `lib/queue.ts`.
+Talks to: `app/(app)/review/page.tsx`, `app/(app)/review/[claimId]/page.tsx`, `review-queue.tsx`, `lib/queue.ts`, `lib/queue.server.ts`.
 
 PRD ref: `prd.md > Features and Behavior > Review`.
 
@@ -420,7 +420,11 @@ What it does: shows before and after crops with the region outlined, the observa
 
 The server re-checks that the claim is still `pending` before deciding; if another tab already decided it, the action returns "This claim was already decided by X." It also re-checks the pair's comparability and the photos' privacy flags; the UI is not the only gate.
 
-Talks to: `claim-review.tsx`, `decideClaim` and `reviseClaim` in `app/(app)/review/actions.ts`, `lib/claims.ts`, `lib/privacy.ts`.
+Decision events (append-only `events` table, one transaction per decision): `claim.confirmed`, `claim.rejected`, `claim.insufficient`, `claim.superseded` (old row on edit-and-confirm), `claim.revision_created` (draft from revise). Edit-and-confirm writes two events — `claim.superseded` then `claim.confirmed` — in the same transaction.
+
+The reviewer edits the observation text and category only. The region stays collector-drawn: it is evidence about where the object was, so a reviewer who thinks the region is wrong rejects the claim or sends it back with a reason instead of redrawing it.
+
+Talks to: `claim-review.tsx`, `review-queue.tsx`, `lib/decisions.ts`, `lib/queue.server.ts`, `lib/review-data.ts`, `app/(app)/review/actions.ts`, `lib/claims.ts`, `lib/privacy.ts`.
 
 PRD ref: `prd.md > Features and Behavior > Review`.
 
