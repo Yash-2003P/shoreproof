@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import { Archivo, IBM_Plex_Mono, Newsreader } from "next/font/google";
 import "./globals.css";
 
@@ -28,10 +29,10 @@ export const metadata: Metadata = {
   },
   description:
     "A photo-first cleanup record where every exported claim resolves to a marked region in a specific photo and a named human review decision.",
-  robots: { index: false, follow: false },
+  robots: { index: true, follow: true },
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html
       lang="en"

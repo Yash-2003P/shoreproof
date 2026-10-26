@@ -7,6 +7,7 @@ const items = [
   { href: "/cleanups", label: "Cleanups" },
   { href: "/review", label: "Review" },
   { href: "/settings", label: "Settings" },
+  { href: "/", label: "Public site" },
 ];
 
 export function AppNav({ reviewCount }: { reviewCount?: number }) {

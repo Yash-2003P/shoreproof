@@ -7,6 +7,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "First run",
+  robots: { index: false, follow: false },
 };
 
 export default function SetupPage() {
