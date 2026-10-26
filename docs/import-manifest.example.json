@@ -1,23 +1,21 @@
 {
   "schema": "shoreproof.import.v1",
   "cleanup": {
-    "external_id": "2026-10-24-north-jetty",
-    "site": "North Jetty",
-    "date": "2026-10-24",
-    "lead": "Maya C.",
-    "conditions": "Low tide, overcast, 12 volunteers. Internal note, not published.",
-    "public_note": "Twelve volunteers removed 18 bags from the north jetty rock line."
+    "external_id": "your-cleanup-id",
+    "site": "Your cleanup site",
+    "date": "YYYY-MM-DD",
+    "lead": "Your name"
   },
   "consent": {
     "attested": true,
-    "by": "Maya C.",
-    "note": "Photos taken by the cleanup lead; no identifiable people."
+    "by": "Your name",
+    "note": "Photos taken by you or used with permission; no identifiable people."
   },
   "pairs": [
     {
-      "label": "Rock line at the north jetty",
-      "before": "photos/pair-1-before.jpg",
-      "after": "photos/pair-1-after.jpg",
+      "label": "Your pair label",
+      "before": "photos/before.jpg",
+      "after": "photos/after.jpg",
       "before_people_visible": false,
       "after_people_visible": false
     }

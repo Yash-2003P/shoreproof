@@ -62,7 +62,7 @@ npm run import -- --dry-run ./imports/north-jetty/manifest.json
 npm run import -- ./imports/north-jetty/manifest.json
 ```
 
-The schema is [`docs/import-manifest.example.json`](docs/import-manifest.example.json). Photo paths are relative to the manifest and cannot escape it. The importer sanitizes every photo through the same path as an upload, creates the cleanup, pairs, preflight checks, and framing signal, and writes an import audit row. It creates **zero claims**; marking and review stay human work. Re-running the same manifest prints “Already imported” and writes nothing. `imports/` is gitignored.
+The schema is [`docs/import-manifest.example.json`](docs/import-manifest.example.json). Copy it and replace every placeholder, including a real `YYYY-MM-DD` date. Photo paths are relative to the manifest and cannot escape it. The importer sanitizes every photo through the same path as an upload, creates the cleanup, pairs, preflight checks, and framing signal, and writes an import audit row. It creates **zero claims**; marking and review stay human work. Re-running the same manifest prints “Already imported” and writes nothing. `imports/` is gitignored.
 
 ## Docker
 

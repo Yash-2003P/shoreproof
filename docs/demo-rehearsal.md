@@ -16,6 +16,31 @@ The submission video is under three minutes and shows the core loop end to end. 
 
 If the two real pairs do not exist yet, stop. Do not substitute stock photos, a seeded record, or an invented cleanup.
 
+## Prepare the demo record
+
+The app starts empty. Put the two real pairs on disk and import them once; the importer creates the cleanup, pairs, photos, and checks, but **zero claims**. Marking and review stay on camera.
+
+1. Create a gitignored folder, for example `imports/demo/`, with `photos/pair-1-before.jpg`, `photos/pair-1-after.jpg`, and the same for pair 2.
+2. Copy [`docs/import-manifest.example.json`](import-manifest.example.json) to `imports/demo/manifest.json`. Replace every placeholder with the real site, date, lead, consent note, and photo paths. Use a public place name, not a street address.
+3. Dry-run, then import into the same data directory the recording will use:
+
+   ```bash
+   DATA_DIR=/tmp/shoreproof-demo npm run import -- --dry-run ./imports/demo/manifest.json
+   DATA_DIR=/tmp/shoreproof-demo npm run import -- ./imports/demo/manifest.json
+   ```
+
+4. Start the workspace from that data directory so the recording begins from a known state:
+
+   ```bash
+   DATA_DIR=/tmp/shoreproof-demo npm run dev
+   ```
+
+   The import already created the lead as a collector, so the workspace opens at `/cleanups`; no first-run form appears. If you want a separate reviewer on camera, add one in **Settings** before recording. Otherwise the receipt will disclose that the claim was self-reviewed. Do not set `WORKSPACE_PASSPHRASE` for the local recording unless you need it; if you do, unlock before recording and keep the passphrase off screen.
+
+5. Open the imported cleanup. Both pairs should be present with no claims. Publish nothing yet.
+
+`imports/` is gitignored, and the importer never writes a claim. If the import prints “Already imported,” the manifest was already applied; use a fresh `DATA_DIR` for a clean recording.
+
 ## Three-minute shot list
 
 ### 0:00–0:20 — The problem
