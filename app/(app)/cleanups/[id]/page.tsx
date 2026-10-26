@@ -174,16 +174,23 @@ export default async function CleanupRecordPage({
             </div>
           ) : null}
 
-          <div className="border border-line bg-wash p-5">
+          <Link
+            href={`/cleanups/${cleanup.id}/export`}
+            className="block border border-line bg-wash p-5 transition-colors hover:border-tide"
+          >
             <div className="flex items-center justify-between gap-3">
-              <p className="field-label">Public page</p>
+              <p className="field-label">Evidence pack</p>
               <PublicChip published={cleanup.public_enabled === 1} />
             </div>
             <p className="mt-3 text-xs leading-5 text-muted">
-              Off by default. Publishing needs at least one confirmed claim and
-              no privacy blockers. Unpublishing invalidates the old link.
+              Preview the export, download the self-contained record, or publish
+              the read-only public page. Off by default; publishing needs at
+              least one confirmed claim and no privacy blockers.
             </p>
-          </div>
+            <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.08em] text-tide">
+              Open export →
+            </p>
+          </Link>
         </aside>
       </div>
     </div>

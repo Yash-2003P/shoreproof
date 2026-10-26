@@ -435,7 +435,7 @@ Verify: confirm locks the form; revise keeps v1 visible in the audit log; a deci
 What it does: renders the export preview and the public page from the same data, in two modes.
 
 - **Export mode:** cover, method, confirmed claims with crops and receipts, excluded-claims appendix (rejected + insufficient, with reasons), AI disclosure, audit log.
-- **Public mode:** cover, method (including the detector disclosure), confirmed claims with receipts. No excluded appendix, no internal conditions, no audit log.
+- **Public mode:** cover, method (including the detector disclosure), confirmed claims with receipts. No excluded appendix, no internal conditions, no reviewer decision notes, no audit log.
 
 Receipt shape:
 
@@ -461,18 +461,18 @@ type Receipt = {
 };
 ```
 
-**Blockers (`lib/privacy.ts`):**
+**Blockers (`lib/export.ts`):**
 
-- `exportBlockers(cleanupId)` returns a list when a confirmed claim's source photo is missing, superseded, or `people_visible = 1`; when its pair is not `comparable` or `partial`; or when the region, text, or category is missing.
+- `exportBlockers(cleanupId)` returns a list when a confirmed claim's source photo is missing or superseded; when its source photo or either current photo in the pair is `people_visible = 1`; when its pair is not `comparable` or `partial`; or when the region, text, or category is missing.
 - `publicBlockers(cleanupId)` adds "no confirmed claims" and returns the same list.
 - The export route returns `409` with the blockers instead of shipping a broken or private receipt.
 - The public page route returns 404 unless `public_enabled = 1` and the slug matches.
 
 **Downloads:** `GET /api/cleanups/[id]/export?format=html` and `?format=json`. HTML is self-contained: inline CSS, system fonts, 640 px crops as base64 JPEG (quality 72). JSON uses `schema: "shoreproof.export.v1"`. Both set `Content-Disposition: attachment; filename="shoreproof-record-<short-id>.<ext>"`. The HTML template escapes every user string with `escapeHtml`.
 
-**Publish:** `publishCleanup` runs `publicBlockers`, generates a new `public_slug` from `crypto.randomBytes(9).toString('base64url')`, sets `public_enabled = 1` and `public_published_at`, and writes `public.published`. `unpublishCleanup` sets `public_enabled = 0`, regenerates the slug, and writes `public.unpublished`. The public page is `noindex, nofollow` and uses `SITE_URL` for absolute links.
+**Publish:** `publishCleanup` runs `publicBlockers`, generates a new `public_slug` from `crypto.randomBytes(9).toString('base64url')`, sets `public_enabled = 1` and `public_published_at`, and writes `public.published`. `unpublishCleanup` sets `public_enabled = 0`, regenerates the slug, and writes `public.unpublished`. The public page is `noindex, nofollow`; the copy-link button builds the absolute URL from the current origin, so no canonical host is baked into the record.
 
-Talks to: `components/evidence-pack.tsx`, `components/receipt.tsx`, `lib/export.ts`, `lib/html.ts`, `lib/privacy.ts`, `app/api/cleanups/[id]/export/route.ts`, `app/(app)/cleanups/[id]/export/page.tsx`, `app/p/[slug]/page.tsx`.
+Talks to: `components/evidence-pack.tsx`, `components/receipt.tsx`, `components/publish-panel.tsx`, `lib/export.ts`, `lib/html.ts`, `lib/publishing.ts`, `app/api/cleanups/[id]/export/route.ts`, `app/(app)/cleanups/[id]/export/page.tsx`, `app/(app)/cleanups/[id]/export/actions.ts`, `app/p/[slug]/page.tsx`.
 
 PRD ref: `prd.md > Features and Behavior > Evidence pack and public page`.
 
@@ -750,7 +750,7 @@ Status rules:
 - A claim is editable only in `draft`; a submitted claim is `pending`; decisions are terminal except a revision, which creates a new row.
 - A decision writes `status`, `decided_by`, `decided_at`, and `decision_note` together with its event in one transaction. `decision_note` holds the optional confirm note or the required reject/insufficient reason.
 - `insufficient` is a return, not a rejection. The collector responds with a new photo and a new claim.
-- The export reads `confirmed` claims whose source photo is current (`photos.superseded_at IS NULL`), whose pair is `comparable` or `partial`, and whose source and comparison photos are not `people_visible`.
+- The export reads `confirmed` claims whose source photo is current (`photos.superseded_at IS NULL`), whose pair is `comparable` or `partial`, and whose source and comparison photos are not `people_visible`. It is all-or-nothing: if any confirmed claim fails those checks, the export route returns `409` with the blockers instead of silently omitting the claim.
 - The public page reads the same set, plus `cleanups.public_enabled = 1` and a matching `public_slug`. It never reads the excluded appendix or the audit log.
 - A photo cannot be replaced while it is the source of a confirmed claim. The server returns a conflict and asks for a revision.
 - Claims and AI suggestions attach to the pair's current **before** photo. The after photo is comparison evidence; the server rejects a claim pointing at an after photo.
@@ -823,6 +823,7 @@ shoreproof/
 │   ├── claim-form.tsx
 │   ├── review-queue.tsx
 │   ├── claim-review.tsx
+│   ├── publish-panel.tsx
 │   ├── evidence-pack.tsx
 │   └── receipt.tsx
 ├── lib/
@@ -834,7 +835,7 @@ shoreproof/
 │   ├── cleanups.ts
 │   ├── pairs.ts
 │   ├── photos.ts                   # ingestPhoto, near-duplicate
-│   ├── privacy.ts                  # sanitizeImage, consent, blockers
+│   ├── privacy.ts                  # sanitizeImage, consent
 │   ├── claims.ts
 │   ├── suggestions.ts
 │   ├── queue.ts                    # flags + priority, pure
@@ -842,8 +843,9 @@ shoreproof/
 │   ├── preflight-client.ts         # browser provisional checks
 │   ├── framing.ts                  # 8x8 grid signal
 │   ├── region.ts                   # clamp + normalize, pure
-│   ├── export.ts                   # receipt assembly, pure-ish
+│   ├── export.ts                   # receipt assembly, blockers, crop data URIs
 │   ├── html.ts                     # escapeHtml + standalone pack template
+│   ├── publishing.ts               # publish/unpublish, slug rotation, public lookup
 │   ├── storage.ts                  # paths under DATA_DIR
 │   ├── validation.ts               # Zod schemas
 │   ├── import.ts                   # manifest validation + import
