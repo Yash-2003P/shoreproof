@@ -55,6 +55,10 @@ export type CreateCleanupInput = {
   publicNote: string | null;
   leadId: string;
   consentVersion: string;
+  /** Set by the manifest importer; capture leaves it null. */
+  externalId?: string | null;
+  /** Defaults to the lead when the consenting person is the same. */
+  consentById?: string;
 };
 
 export function createCleanup(input: CreateCleanupInput): CleanupWithLead {
@@ -76,16 +80,17 @@ export function createCleanup(input: CreateCleanupInput): CleanupWithLead {
        id, external_id, public_slug, site, date, lead_id,
        conditions, public_note, consent_attested_by, consent_attested_at,
        consent_version, public_enabled, public_published_at, created_at
-     ) VALUES (?, NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, NULL, ?)`,
+     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, NULL, ?)`,
   ).run(
     id,
+    input.externalId ?? null,
     publicSlug,
     input.site,
     input.date,
     input.leadId,
     input.conditions,
     input.publicNote,
-    input.leadId,
+    input.consentById ?? input.leadId,
     now,
     input.consentVersion,
     now,

@@ -68,7 +68,13 @@ export function framingScore(input: {
 export async function luminanceGrid(
   filePath: string,
 ): Promise<number[]> {
-  const { data } = await sharp(filePath)
+  return luminanceGridFrom(filePath);
+}
+
+async function luminanceGridFrom(
+  input: string | Buffer,
+): Promise<number[]> {
+  const { data } = await sharp(input)
     .resize(FRAMING_GRID_SIZE, FRAMING_GRID_SIZE, { fit: "fill" })
     .greyscale()
     .raw()
@@ -77,15 +83,15 @@ export async function luminanceGrid(
   return Array.from(data);
 }
 
-export async function computeFramingSignal(
-  beforePath: string,
-  afterPath: string,
+async function computeFramingFrom(
+  before: string | Buffer,
+  after: string | Buffer,
 ): Promise<FramingSignal> {
   const [gridA, gridB, metaA, metaB] = await Promise.all([
-    luminanceGrid(beforePath),
-    luminanceGrid(afterPath),
-    sharp(beforePath).metadata(),
-    sharp(afterPath).metadata(),
+    luminanceGridFrom(before),
+    luminanceGridFrom(after),
+    sharp(before).metadata(),
+    sharp(after).metadata(),
   ]);
 
   const ratioA = (metaA.width ?? 1) / (metaA.height ?? 1);
@@ -95,4 +101,19 @@ export async function computeFramingSignal(
     ...framingScore({ gridA, gridB, ratioA, ratioB }),
     grids: { before: gridA, after: gridB },
   };
+}
+
+export async function computeFramingSignal(
+  beforePath: string,
+  afterPath: string,
+): Promise<FramingSignal> {
+  return computeFramingFrom(beforePath, afterPath);
+}
+
+/** Dry-run imports compare sanitized buffers before anything is written. */
+export async function computeFramingSignalFromBuffers(
+  before: Buffer,
+  after: Buffer,
+): Promise<FramingSignal> {
+  return computeFramingFrom(before, after);
 }

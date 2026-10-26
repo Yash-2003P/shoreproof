@@ -15,6 +15,17 @@ Open <http://localhost:3000>. The first run asks for a display name and role, th
 
 Requires Node 24+ and npm 11+. No API keys. No GPU.
 
+## Import a real cleanup
+
+For photos already on disk, write a manifest and point the importer at it:
+
+```bash
+npm run import -- --dry-run ./imports/north-jetty/manifest.json
+npm run import -- ./imports/north-jetty/manifest.json
+```
+
+The schema is [`docs/import-manifest.example.json`](docs/import-manifest.example.json). Photo paths are relative to the manifest and cannot escape it. The importer sanitizes every photo through the same path as an upload, creates the cleanup, pairs, preflight checks, and framing signal, and writes an import audit row. It creates **zero claims**; marking and review stay human work. Re-running the same manifest prints “Already imported” and writes nothing. `imports/` is gitignored.
+
 ## Documentation
 
 - [`devpost/scope.md`](devpost/scope.md) — what this is and what it refuses to be

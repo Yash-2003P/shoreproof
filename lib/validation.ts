@@ -15,6 +15,9 @@ export function todayIso(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
+/** The consent policy version recorded with every cleanup. */
+export const CONSENT_VERSION = "2026-10-24";
+
 export const personSchema = z.object({
   displayName: z
     .string()

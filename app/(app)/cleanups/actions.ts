@@ -36,6 +36,7 @@ import {
 import {
   claimDraftSchema,
   cleanupSchema,
+  CONSENT_VERSION,
   comparabilityStateSchema,
   consentSchema,
   fieldErrors,
@@ -45,8 +46,6 @@ import {
   textOrNull,
   type ActionState,
 } from "@/lib/validation";
-
-const CONSENT_VERSION = "2026-10-24";
 
 export async function createCleanup(
   _previous: ActionState,
