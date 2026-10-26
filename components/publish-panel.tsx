@@ -60,11 +60,11 @@ export function PublishPanel({
   const publicPath = `/p/${slug}`;
 
   return (
-    <section className="panel p-5" aria-labelledby="publish-heading">
+    <section className="panel p-5 sm:p-6" aria-labelledby="publish-heading">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="field-label">Public page</p>
-          <h2 id="publish-heading" className="mt-1 font-serif text-xl text-ink">
+          <h2 id="publish-heading" className="heading-2 mt-1">
             {reachable
               ? "This record is public"
               : published
@@ -77,19 +77,19 @@ export function PublishPanel({
         </span>
       </div>
 
-      <p className="mt-3 text-xs leading-5 text-muted">
+      <p className="dense-text mt-3 text-muted">
         The public page shows confirmed claims and receipts only. It omits the
         excluded-claims appendix, internal conditions, and the audit log. It is
-        marked <span className="font-mono">noindex, nofollow</span>. Publishing
+        marked <span className="mono text-xs">noindex, nofollow</span>. Publishing
         and unpublishing both rotate the link, so an old URL stops working.
       </p>
 
       {blockers.length > 0 ? (
-        <div className="mt-4 border-l-[3px] border-flag bg-wash px-3.5 py-3">
+        <div className="mt-4 border-l-[3px] border-flag bg-wash px-4 py-3.5">
           <p className="field-label text-flag-ink">
             {published ? "The public page is returning 404" : "Before publishing"}
           </p>
-          <ul className="mt-1.5 space-y-1 text-xs leading-5 text-muted">
+          <ul className="mt-2 space-y-1.5 text-sm leading-6 text-muted">
             {blockers.map((blocker) => (
               <li key={`${blocker.code}-${blocker.claimId ?? ""}`}>
                 {blocker.message}
@@ -100,13 +100,13 @@ export function PublishPanel({
       ) : null}
 
       {reachable ? (
-        <div className="mt-4 border border-line bg-wash p-3.5">
+        <div className="mt-4 border border-line bg-wash p-4">
           <p className="field-label">Live link</p>
           <Link
             href={publicPath}
             target="_blank"
             rel="noreferrer"
-            className="mt-1 block break-all font-mono text-[12px] text-tide underline decoration-line underline-offset-2 hover:decoration-tide"
+            className="mt-1 inline-flex min-h-11 items-center break-all font-mono text-xs text-tide link-underline"
           >
             {publicPath}
           </Link>
@@ -124,7 +124,7 @@ export function PublishPanel({
             </form>
           </div>
           {publishedAt ? (
-            <p className="mt-2 font-mono text-[9px] uppercase tracking-[0.08em] text-muted">
+            <p className="mt-2 text-xs text-muted">
               Published {publishedAt.slice(0, 10)}
             </p>
           ) : null}
@@ -157,7 +157,7 @@ export function PublishPanel({
             {publishPending ? "Publishing…" : "Publish record"}
           </button>
           {blockers.length > 0 ? (
-            <p className="mt-2 font-mono text-[9px] uppercase tracking-[0.08em] text-muted">
+            <p className="mt-2 text-xs text-muted">
               Resolve the blockers above to publish.
             </p>
           ) : null}
@@ -165,17 +165,13 @@ export function PublishPanel({
       )}
 
       {publishState.message ? (
-        <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.08em] text-tide">
-          {publishState.message}
-        </p>
+        <p className="mt-3 text-sm text-tide">{publishState.message}</p>
       ) : null}
       {publishState.errors?.publish ? (
         <p className="field-error">{publishState.errors.publish}</p>
       ) : null}
       {unpublishState.message ? (
-        <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.08em] text-tide">
-          {unpublishState.message}
-        </p>
+        <p className="mt-3 text-sm text-tide">{unpublishState.message}</p>
       ) : null}
       {unpublishState.errors?.publish ? (
         <p className="field-error">{unpublishState.errors.publish}</p>

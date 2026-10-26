@@ -145,13 +145,13 @@ export function PhotoUploader({
         ) : (
           <div className="flex flex-col items-center gap-2 px-6 py-12 text-center">
             <span className="field-label">{title}</span>
-            <span className="text-sm text-ink">No photo yet</span>
-            <span className="max-w-[16rem] text-xs leading-5 text-muted">
+            <span className="text-base font-medium text-ink">No photo yet</span>
+            <span className="max-w-[18rem] text-sm leading-6 text-muted">
               {detail}
             </span>
             <button
               type="button"
-              className="btn btn-ghost mt-2"
+              className="btn btn-ghost mt-3"
               onClick={() => inputRef.current?.click()}
               disabled={uploading}
             >
@@ -162,10 +162,10 @@ export function PhotoUploader({
 
         {uploading ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-ink/70 px-6 text-center text-salt">
-            <span className="font-mono text-[10px] uppercase tracking-[0.14em]">
+            <span className="text-sm font-semibold">
               Sanitizing and checking
             </span>
-            <span className="text-xs text-salt/80">
+            <span className="text-xs text-salt/85">
               The original upload is discarded.
             </span>
             <div className="mt-1 h-1 w-40 overflow-hidden bg-salt/20">
@@ -175,11 +175,11 @@ export function PhotoUploader({
         ) : null}
       </div>
 
-      <div className="border-t border-line p-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
+      <div className="border-t border-line p-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="field-label">{title}</p>
-            <p className="mono mt-0.5 text-[10px] text-muted">
+            <p className="mono mt-0.5 text-xs text-muted">
               {photo
                 ? `${photo.width} × ${photo.height} px · ${Math.round(
                     photo.bytes / 1024,
@@ -196,7 +196,7 @@ export function PhotoUploader({
             {photo ? (
               <button
                 type="button"
-                className="btn btn-ghost h-8 min-h-8 px-2"
+                className="btn btn-ghost px-3"
                 onClick={() => inputRef.current?.click()}
                 disabled={uploading}
               >
@@ -207,21 +207,21 @@ export function PhotoUploader({
         </div>
 
         {photo ? (
-          <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1 border-t border-line pt-2">
-            <p className="mono text-[10px] text-muted">
+          <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1.5 border-t border-line pt-3">
+            <p className="mono text-xs text-muted">
               Blur {Math.round(photo.blur_score)}
             </p>
-            <p className="mono text-[10px] text-muted">
+            <p className="mono text-xs text-muted">
               Exposure {(photo.exposure_clipped * 100).toFixed(1)}%
             </p>
-            <p className="mono text-[10px] text-muted">
+            <p className="mono text-xs text-muted">
               SHA {photo.sha256.slice(0, 10)}…
             </p>
-            <p className="mono text-[10px] text-muted">
+            <p className="mono text-xs text-muted">
               People visible {photo.people_visible === 1 ? "yes" : "no"}
             </p>
             {duplicate !== "none" ? (
-              <p className="col-span-2 mono text-[10px] text-flag-ink">
+              <p className="col-span-2 mono text-xs text-flag-ink">
                 {duplicate === "exact"
                   ? "Exact duplicate of another photo in this cleanup."
                   : duplicate === "likely"
@@ -231,12 +231,12 @@ export function PhotoUploader({
             ) : null}
           </div>
         ) : (
-          <label className="mt-3 flex cursor-pointer items-start gap-2 border-t border-line pt-3">
+          <label className="mt-3 flex cursor-pointer items-start gap-2.5 border-t border-line pt-3">
             <input
               type="checkbox"
               checked={peopleVisible}
               onChange={(event) => setPeopleVisible(event.target.checked)}
-              className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--tide)]"
+              className="mt-0.5 shrink-0 accent-[var(--tide)]"
             />
             <span className="text-xs leading-5 text-muted">
               Anyone identifiable is visible in this photo. It will be stored,
@@ -246,21 +246,21 @@ export function PhotoUploader({
         )}
 
         {provisional ? (
-          <div className="mt-3 border border-line bg-paper px-3 py-2">
+          <div className="mt-3 border border-line bg-paper px-3.5 py-3">
             <p className="field-label">Local preflight · provisional</p>
-            <p className="mono mt-1 text-[10px] leading-4 text-ink">
+            <p className="mono mt-1 text-xs leading-5 text-ink">
               {provisional.width} × {provisional.height} · blur{" "}
               {Math.round(provisional.blurScore)} · exposure{" "}
               {(provisional.exposureClipped * 100).toFixed(1)}% · dHash{" "}
               {provisional.dhash.slice(0, 8)}
             </p>
-            <p className="mono mt-1 text-[10px] text-ink">
+            <p className="mono mt-1 text-xs text-ink">
               Duplicate:{" "}
               {provisional.duplicate
                 ? `${provisional.duplicate.level} · ${provisional.duplicate.side} photo · distance ${provisional.duplicate.distance}`
                 : "none"}
             </p>
-            <p className="mt-1 text-[11px] leading-4 text-muted">
+            <p className="mt-1 text-xs leading-5 text-muted">
               The server repeats these checks on the sanitized file and stores
               the canonical numbers.
             </p>

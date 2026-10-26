@@ -457,7 +457,7 @@ export function RegionOverlay({
               <span
                 key={claim.id}
                 aria-hidden="true"
-                className={`pointer-events-none absolute px-1 py-0.5 font-mono text-[9px] leading-none ${
+                className={`pointer-events-none absolute px-1.5 py-1 font-mono text-xs leading-none ${
                   claim.id === selectedId
                     ? "bg-flag text-white"
                     : "bg-ink/85 text-salt"
@@ -476,7 +476,7 @@ export function RegionOverlay({
             <span
               key={suggestion.id}
               aria-hidden="true"
-              className={`pointer-events-none absolute px-1 py-0.5 font-mono text-[9px] leading-none ${
+              className={`pointer-events-none absolute px-1.5 py-1 font-mono text-xs leading-none ${
                 suggestion.selected
                   ? "bg-flag text-white"
                   : "bg-paper/90 text-flag-ink"
@@ -496,7 +496,7 @@ export function RegionOverlay({
                   key={item.handle}
                   role="presentation"
                   aria-hidden="true"
-                  className="absolute z-10 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 border border-paper bg-tide shadow-sm"
+                  className="absolute z-10 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center"
                   style={{
                     left: `${item.left(region) * 100}%`,
                     top: `${item.top(region) * 100}%`,
@@ -505,14 +505,16 @@ export function RegionOverlay({
                   onPointerDown={(event) =>
                     startResize(event, item.handle)
                   }
-                />
+                >
+                  <span className="h-3.5 w-3.5 border border-paper bg-tide shadow-sm" />
+                </div>
               ))
             : null}
 
           {region ? (
             <span
               aria-hidden="true"
-              className="pointer-events-none absolute bottom-2 left-2 bg-paper/95 px-2 py-1 font-mono text-[9px] uppercase tracking-[0.08em] text-ink"
+              className="pointer-events-none absolute bottom-2 left-2 bg-paper/95 px-2 py-1.5 font-mono text-xs tracking-[0.04em] text-ink"
             >
               {formatRegion(region)}
             </span>
@@ -521,10 +523,10 @@ export function RegionOverlay({
       ) : null}
 
       <div className="pointer-events-none absolute inset-x-0 top-0 flex justify-between gap-2 p-2">
-        <span className="bg-ink/85 px-2 py-1 font-mono text-[9px] uppercase tracking-[0.1em] text-salt">
+        <span className="bg-ink/85 px-2.5 py-1.5 text-xs font-medium text-salt">
           Before · claim source
         </span>
-        <span className="bg-paper/90 px-2 py-1 font-mono text-[9px] uppercase tracking-[0.1em] text-ink">
+        <span className="bg-paper/90 px-2.5 py-1.5 text-xs font-medium text-ink">
           {claims.length} {claims.length === 1 ? "claim" : "claims"}
         </span>
       </div>

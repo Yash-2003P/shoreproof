@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ComparabilityChip } from "@/components/comparability-chip";
+import { Breadcrumbs, PageHeader } from "@/components/page-header";
 import { PairWorkspace } from "@/components/pair-workspace";
 import { Stepper } from "@/components/stepper";
 import { getClaimsForPair } from "@/lib/claims";
@@ -19,6 +19,10 @@ import {
 } from "@/lib/photos";
 
 export const dynamic = "force-dynamic";
+
+export const metadata = {
+  title: "Pair workspace",
+};
 
 export default async function PairWorkspacePage({
   params,
@@ -42,16 +46,15 @@ export default async function PairWorkspacePage({
   const blockers = getPairBlockers(pair.id);
   const framing = getPairFramingDetail(pair.id);
   const pendingClaims = claims.filter((claim) => claim.status === "pending").length;
-  const submitted = pendingClaims > 0;
+  const reviewed = claims.length > 0 && claims.every((claim) => claim.status === "confirmed");
+  const submitted = claims.some((claim) => claim.status !== "draft");
   const currentStep = submitted
-    ? 5
+    ? 4
     : after && claims.length > 0 && pair.comparability
-      ? 4
+      ? 3
       : claims.length > 0
-        ? 3
-        : before
-          ? 2
-          : 1;
+        ? 2
+        : 1;
   const knownPhotos = getCurrentPhotosForCleanup(pair.cleanup_id)
     .filter((photo) => photo.pair_id !== pair.id)
     .map((photo) => ({
@@ -61,40 +64,41 @@ export default async function PairWorkspacePage({
     }));
 
   return (
-    <div className="mx-auto w-full max-w-[1400px] px-6 py-6">
-      <nav className="flex flex-wrap items-center gap-2 font-mono text-[10px] uppercase tracking-[0.1em] text-muted">
-        <Link href="/cleanups" className="hover:text-ink">
-          Cleanups
-        </Link>
-        <span aria-hidden="true">/</span>
-        <Link href={`/cleanups/${pair.cleanup_id}`} className="hover:text-ink">
-          {pair.cleanup_site}
-        </Link>
-        <span aria-hidden="true">/</span>
-        <span className="text-ink">{pair.label}</span>
-      </nav>
+    <div className="page page-wide">
+      <Breadcrumbs
+        items={[
+          { label: "Cleanups", href: "/cleanups" },
+          { label: pair.cleanup_site, href: `/cleanups/${pair.cleanup_id}` },
+          { label: pair.label },
+        ]}
+      />
 
-      <header className="mt-4 flex flex-wrap items-end justify-between gap-4 border-b border-line pb-5">
-        <div>
-          <p className="field-label">Pair workspace</p>
-          <h1 className="mt-1 font-serif text-3xl leading-tight text-ink">
-            {pair.label}
-          </h1>
-          <p className="mono mt-1 text-[11px] text-muted">
-            {pair.cleanup_site} · {formatDate(pair.cleanup_date)}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <ComparabilityChip value={pair.comparability} />
-          <span className="chip text-muted">
-            {submitted
-              ? "In review"
-              : claims.length === 0
-                ? "No claims"
-                : `${claims.length} ${claims.length === 1 ? "claim" : "claims"}`}
-          </span>
-        </div>
-      </header>
+      <div className="mt-5">
+        <PageHeader
+          size="section"
+          title={pair.label}
+          meta={
+            <span>
+              {pair.cleanup_site} · {formatDate(pair.cleanup_date)}
+            </span>
+          }
+          description="Mark what you removed on the before photo, write one sentence, then compare and submit it for review."
+          actions={
+            <>
+              <ComparabilityChip value={pair.comparability} />
+              <span className="chip text-muted">
+                {pendingClaims > 0
+                  ? "In review"
+                  : reviewed
+                    ? "Reviewed"
+                    : claims.length === 0
+                      ? "No claims"
+                      : `${claims.length} ${claims.length === 1 ? "claim" : "claims"}`}
+              </span>
+            </>
+          }
+        />
+      </div>
 
       <Stepper current={currentStep} />
 
@@ -110,7 +114,6 @@ export default async function PairWorkspacePage({
         framingScore={pair.framing_score}
         framingWord={framing?.word ?? null}
         blockers={blockers}
-        pendingClaims={pendingClaims}
         knownBefore={knownPhotos}
         knownAfter={knownPhotos}
       />

@@ -26,8 +26,8 @@ export function ReviewQueue({
   if (items.length === 0) {
     return (
       <div className="panel p-5" aria-label="Review queue">
-        <p className="field-label">Nothing waiting</p>
-        <p className="mt-2 text-sm leading-5 text-muted">
+        <h2 className="panel-title">Queue empty</h2>
+        <p className="dense-text mt-2 text-muted">
           Nothing waiting. Confirmed claims are in the record.
         </p>
       </div>
@@ -39,9 +39,12 @@ export function ReviewQueue({
       aria-label="Review queue"
       className="panel divide-y divide-line overflow-hidden"
     >
-      <p className="border-b border-line bg-wash px-4 py-2 font-mono text-[10px] uppercase tracking-[0.1em] text-muted">
-        {items.length} {items.length === 1 ? "claim" : "claims"} waiting
-      </p>
+      <div className="flex items-center justify-between gap-2 border-b border-line bg-wash px-4 py-3">
+        <h2 className="field-label">Waiting for review</h2>
+        <span className="mono text-xs text-muted">
+          {items.length} {items.length === 1 ? "claim" : "claims"}
+        </span>
+      </div>
 
       <ul>
         {items.map((item) => {
@@ -52,26 +55,29 @@ export function ReviewQueue({
               <Link
                 href={`/review/${item.id}`}
                 aria-current={selected ? "true" : undefined}
-                className={`block px-4 py-3 transition-colors hover:bg-wash ${
+                className={`block px-4 py-4 transition-colors hover:bg-wash ${
                   selected ? "bg-tide/10 ring-1 ring-inset ring-tide" : ""
                 }`}
               >
-                <div className="flex items-center justify-between gap-2">
-                  <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-muted">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-xs font-medium text-muted">
                     {item.site} · {item.pairLabel}
                   </span>
-                  <span className="font-mono text-[10px] text-tide">
-                    {item.priority}
+                  <span
+                    className="mono text-xs text-tide"
+                    title={`Priority ${item.priority}`}
+                  >
+                    P{item.priority}
                   </span>
                 </div>
 
-                <p className="mt-1.5 text-sm leading-5 text-ink">
+                <p className="mt-1.5 text-sm leading-6 text-ink">
                   {item.text.length > 90
                     ? `${item.text.slice(0, 90)}…`
                     : item.text}
                 </p>
 
-                <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
                   {item.flags.length === 0 ? (
                     <span className="chip text-muted">No flags</span>
                   ) : (
@@ -88,9 +94,8 @@ export function ReviewQueue({
                   )}
                 </div>
 
-                <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.08em] text-muted">
-                  {item.category ?? "No category"} ·{" "}
-                  {item.collectorName}
+                <p className="mt-2 text-xs text-muted">
+                  {item.category ?? "No category"} · {item.collectorName}
                 </p>
               </Link>
             </li>

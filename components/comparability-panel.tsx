@@ -61,9 +61,16 @@ export function ComparabilityPanel({
   }
 
   return (
-    <section className="panel" aria-label="Comparability">
-      <div className="flex items-center justify-between gap-2 border-b border-line px-4 py-3">
-        <p className="field-label">Comparability</p>
+    <section className="panel" aria-labelledby="comparability-heading">
+      <div className="panel-header">
+        <div>
+          <h2 id="comparability-heading" className="panel-title">
+            Before/after match
+          </h2>
+          <p className="mt-0.5 text-xs text-muted">
+            Comparability: can these two photos be read as the same spot?
+          </p>
+        </div>
         {state ? (
           <span className="chip chip-tide">
             {OPTIONS.find((option) => option.value === state)?.label}
@@ -73,15 +80,15 @@ export function ComparabilityPanel({
         )}
       </div>
 
-      <div className="px-4 py-3">
-        <div className="border border-line bg-wash px-3 py-2">
+      <div className="panel-body">
+        <div className="border border-line bg-wash px-3.5 py-3">
           <div className="flex items-baseline justify-between gap-2">
             <span className="field-label">Framing signal</span>
-            <span className="mono text-[11px] text-ink">
+            <span className="mono text-sm text-ink">
               {framingScore === null ? "—" : `${framingScore}/100`}
             </span>
           </div>
-          <p className="mt-1 text-[11px] leading-4 text-muted">
+          <p className="mt-1 text-xs leading-5 text-muted">
             {framingWord
               ? `${framingWord}. A signal, not a verdict.`
               : "Add both photos to compute the signal."}
@@ -89,18 +96,18 @@ export function ComparabilityPanel({
         </div>
 
         {!bothPhotosReady ? (
-          <p className="mt-3 text-[11px] leading-4 text-muted">
+          <p className="mt-3 text-sm leading-6 text-muted">
             Both photos are needed before comparability can be set.
           </p>
         ) : (
           <>
-            <fieldset className="mt-3">
+            <fieldset className="mt-4">
               <legend className="field-label">State</legend>
-              <div className="mt-2 space-y-1.5">
+              <div className="mt-2 space-y-2">
                 {OPTIONS.map((option) => (
                   <label
                     key={option.value}
-                    className={`flex cursor-pointer items-start gap-2 border px-2.5 py-2 text-[12px] leading-4 ${
+                    className={`flex cursor-pointer items-start gap-3 border px-3 py-3 text-sm leading-6 ${
                       choice === option.value
                         ? "border-tide bg-tide/5 text-ink"
                         : "border-line text-muted hover:border-tide/50"
@@ -112,11 +119,13 @@ export function ComparabilityPanel({
                       value={option.value}
                       checked={choice === option.value}
                       onChange={() => setChoice(option.value)}
-                      className="mt-0.5 accent-[var(--tide)]"
+                      className="mt-1 shrink-0 accent-[var(--tide)]"
                     />
                     <span>
-                      <span className="block text-ink">{option.label}</span>
-                      <span className="block text-[11px] text-muted">
+                      <span className="block font-medium text-ink">
+                        {option.label}
+                      </span>
+                      <span className="block text-xs text-muted">
                         {option.detail}
                       </span>
                     </span>
@@ -127,7 +136,10 @@ export function ComparabilityPanel({
 
             {needsReason ? (
               <>
-                <label htmlFor="comparability-reason" className="field-label mt-3 block">
+                <label
+                  htmlFor="comparability-reason"
+                  className="field-label mt-4 block"
+                >
                   Reason
                 </label>
                 <textarea
@@ -136,7 +148,7 @@ export function ComparabilityPanel({
                   onChange={(event) => setWhy(event.target.value)}
                   rows={2}
                   maxLength={500}
-                  className="textarea mt-1 min-h-[64px]"
+                  className="textarea mt-1.5 min-h-[88px]"
                   placeholder="Tide was higher and the camera moved 2 m left."
                 />
               </>
@@ -144,7 +156,7 @@ export function ComparabilityPanel({
 
             <button
               type="button"
-              className="btn btn-primary mt-3"
+              className="btn btn-primary mt-4"
               onClick={save}
               disabled={!choice || (needsReason && why.trim().length === 0) || pending}
             >
@@ -152,10 +164,7 @@ export function ComparabilityPanel({
             </button>
 
             {status.message ? (
-              <p
-                className="mt-2 font-mono text-[10px] uppercase tracking-[0.08em] text-muted"
-                role="status"
-              >
+              <p className="mt-2 text-xs text-muted" role="status">
                 {status.message}
               </p>
             ) : null}

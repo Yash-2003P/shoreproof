@@ -141,7 +141,15 @@ export function listPairs(cleanupId: string): PairWithCounts[] {
               AND ph.superseded_at IS NULL) AS after_count,
          (SELECT COUNT(*) FROM claims cl
             WHERE cl.pair_id = p.id
-              AND cl.status IN ('draft','pending','confirmed','rejected','insufficient')) AS claim_count
+              AND cl.status IN ('draft','pending','confirmed','rejected','insufficient')) AS claim_count,
+         (SELECT ph.id FROM photos ph
+            WHERE ph.pair_id = p.id AND ph.side = 'before'
+              AND ph.superseded_at IS NULL
+            ORDER BY ph.created_at DESC LIMIT 1) AS before_photo_id,
+         (SELECT ph.id FROM photos ph
+            WHERE ph.pair_id = p.id AND ph.side = 'after'
+              AND ph.superseded_at IS NULL
+            ORDER BY ph.created_at DESC LIMIT 1) AS after_photo_id
        FROM pairs p
       WHERE p.cleanup_id = ?
       ORDER BY p.created_at ASC`,

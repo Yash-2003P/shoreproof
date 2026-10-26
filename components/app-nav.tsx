@@ -13,7 +13,10 @@ export function AppNav({ reviewCount }: { reviewCount?: number }) {
   const pathname = usePathname();
 
   return (
-    <nav aria-label="Workspace" className="flex items-center gap-6">
+    <nav
+      aria-label="Workspace"
+      className="order-last flex w-full items-center gap-1 border-t border-line pt-1 sm:order-none sm:w-auto sm:border-0 sm:pt-0"
+    >
       {items.map((item) => {
         const active =
           pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -23,7 +26,7 @@ export function AppNav({ reviewCount }: { reviewCount?: number }) {
             key={item.href}
             href={item.href}
             aria-current={active ? "page" : undefined}
-            className={`border-b pb-1 font-mono text-[10px] uppercase tracking-[0.12em] transition-colors ${
+            className={`inline-flex min-h-11 items-center gap-2 border-b-2 px-2 text-sm font-medium transition-colors sm:px-2.5 ${
               active
                 ? "border-tide text-ink"
                 : "border-transparent text-muted hover:text-ink"
@@ -31,7 +34,7 @@ export function AppNav({ reviewCount }: { reviewCount?: number }) {
           >
             {item.label}
             {item.href === "/review" && reviewCount && reviewCount > 0 ? (
-              <span className="ml-1.5 border border-flag/60 px-1 text-flag-ink">
+              <span className="inline-flex min-h-5 min-w-5 items-center justify-center rounded-full border border-flag/60 bg-flag/10 px-1 text-xs font-semibold leading-none text-flag-ink">
                 {reviewCount}
               </span>
             ) : null}

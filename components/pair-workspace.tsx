@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ClaimForm } from "@/components/claim-form";
+import { Disclosure } from "@/components/disclosure";
 import { ClaimList } from "@/components/claim-list";
 import { CompareCanvas } from "@/components/compare-canvas";
 import { ComparabilityPanel } from "@/components/comparability-panel";
@@ -37,7 +38,6 @@ type PairWorkspaceProps = {
   framingScore: number | null;
   framingWord: string | null;
   blockers: PairBlocker[];
-  pendingClaims: number;
   knownBefore: KnownPhotoHash[];
   knownAfter: KnownPhotoHash[];
 };
@@ -54,7 +54,6 @@ export function PairWorkspace({
   framingScore,
   framingWord,
   blockers,
-  pendingClaims,
   knownBefore,
   knownAfter,
 }: PairWorkspaceProps) {
@@ -182,168 +181,184 @@ export function PairWorkspace({
   }
 
   return (
-    <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
-      <section aria-label="Photo evidence">
-        {before ? (
-          <div>
-            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-              <p className="field-label">Mark a region</p>
-              <p className="mono text-[10px] text-muted">
-                Drag to draw · arrows nudge 0.002 · shift 0.02
+    <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_420px]">
+      <div className="contents min-w-0 lg:flex lg:flex-col lg:gap-5">
+        <div className="order-1">
+          <div className="flex flex-wrap items-end justify-between gap-3 border-b border-line pb-3">
+            <div>
+              <h2 className="heading-2">Mark what you removed</h2>
+              <p className="meta-text mt-1">
+                Draw a box on the before photo. One box, one sentence.
               </p>
             </div>
-            <RegionOverlay
+            <p className="text-xs text-muted">
+              Drag to draw · arrow keys nudge
+            </p>
+          </div>
+
+          {before ? (
+            <div className="mt-4">
+              <RegionOverlay
+                photo={before}
+                claims={claims}
+                suggestions={openSuggestions.map((suggestion) => ({
+                  id: suggestion.id,
+                  x: suggestion.x,
+                  y: suggestion.y,
+                  w: suggestion.w,
+                  h: suggestion.h,
+                  label: `${suggestion.coco_class} ${suggestion.confidence.toFixed(2)}`,
+                  selected: suggestion.id === selectedSuggestionId,
+                }))}
+                region={region}
+                selectedId={selectedId}
+                editable={regionEditable}
+                onBeginNew={beginNew}
+                onRegionChange={setRegion}
+                onSelectClaim={selectClaim}
+                onSelectSuggestion={(id) => {
+                  const suggestion = openSuggestions.find(
+                    (item) => item.id === id,
+                  );
+                  if (suggestion) selectSuggestion(suggestion);
+                }}
+              />
+              <p className="mt-2.5 text-xs leading-5 text-muted">
+                Coordinates are stored relative to the photo, so the region
+                survives any display size. The before photo is the only claim
+                source; the after photo is comparison evidence.
+              </p>
+            </div>
+          ) : (
+            <div className="mt-4 border border-dashed border-line-strong bg-wash p-6">
+              <h3 className="heading-3">Add a before photo to begin.</h3>
+              <p className="dense-text mt-1 text-muted">
+                Every claim resolves to a rectangle on this photo. There is no
+                claim without a region.
+              </p>
+            </div>
+          )}
+        </div>
+
+        <div className="order-3">
+          <div className="grid gap-5 sm:grid-cols-2">
+            <PhotoUploader
+              pairId={pair.id}
+              side="before"
+              title="Before"
+              detail="The claim source. Every marked region lives here."
               photo={before}
-              claims={claims}
-              suggestions={openSuggestions.map((suggestion) => ({
-                id: suggestion.id,
-                x: suggestion.x,
-                y: suggestion.y,
-                w: suggestion.w,
-                h: suggestion.h,
-                label: `${suggestion.coco_class} ${suggestion.confidence.toFixed(2)}`,
-                selected: suggestion.id === selectedSuggestionId,
-              }))}
-              region={region}
-              selectedId={selectedId}
-              editable={regionEditable}
-              onBeginNew={beginNew}
-              onRegionChange={setRegion}
-              onSelectClaim={selectClaim}
-              onSelectSuggestion={(id) => {
-                const suggestion = openSuggestions.find(
-                  (item) => item.id === id,
-                );
-                if (suggestion) selectSuggestion(suggestion);
-              }}
+              knownPhotos={knownBefore}
             />
-            <p className="mt-2 text-xs leading-5 text-muted">
-              Coordinates are stored relative to the photo, so the region
-              survives any display size. The before photo is the only claim
-              source; the after photo is comparison evidence.
-            </p>
+            <PhotoUploader
+              pairId={pair.id}
+              side="after"
+              title="After"
+              detail="Comparison evidence. Never the source of a claim."
+              photo={after}
+              knownPhotos={knownAfter}
+            />
           </div>
-        ) : (
-          <div className="border border-dashed border-line bg-wash p-6">
-            <p className="field-label">Mark a region</p>
-            <p className="mt-2 text-sm leading-6 text-ink">
-              Add a before photo to begin.
-            </p>
-            <p className="mt-1 text-xs leading-5 text-muted">
-              Every claim resolves to a rectangle on this photo. There is no
-              claim without a region.
-            </p>
-          </div>
-        )}
 
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          <PhotoUploader
+          {before && after ? (
+            <div className="mt-5">
+              <CompareCanvas before={before} after={after} />
+            </div>
+          ) : (
+            <div className="panel mt-5 p-5">
+              <div className="flex items-center justify-between gap-3">
+                <h3 className="panel-title">Compare</h3>
+                <span className="chip text-muted">After photo needed</span>
+              </div>
+              <div className="mt-3 h-1.5 w-full bg-wash">
+                <div className="h-1.5 w-1/2 bg-line" />
+              </div>
+              <p className="mt-2 text-sm leading-6 text-muted">
+                The before/after wipe unlocks when both photos exist. A framing
+                signal will sit above it — a hint, not a verdict.
+              </p>
+            </div>
+          )}
+
+          <Disclosure
+            title="How capture order works"
+            meta="Before is the claim source; after is comparison evidence"
+            className="mt-5"
+          >
+            <p className="text-sm leading-6 text-muted">
+              Before is the source of every claim. After is comparison evidence
+              only. Replacing a photo re-runs every check and supersedes the old
+              row; a photo that sources a claim cannot be replaced until its
+              drafts are removed.
+            </p>
+          </Disclosure>
+        </div>
+      </div>
+
+      <div className="contents lg:flex lg:flex-col lg:gap-4">
+        <div className="order-2 space-y-4">
+          <ClaimForm
             pairId={pair.id}
-            side="before"
-            title="Before"
-            detail="The claim source. Every marked region lives here."
-            photo={before}
-            knownPhotos={knownBefore}
+            photoId={before?.id ?? null}
+            selectedClaim={selectedClaim}
+            region={region}
+            text={text}
+            category={category}
+            onTextChange={setText}
+            onCategoryChange={setCategory}
+            onMarkFull={markFull}
+            onClearRegion={clearRegion}
+            onSaved={handleSaved}
+            onDeleted={handleDeleted}
           />
-          <PhotoUploader
-            pairId={pair.id}
-            side="after"
-            title="After"
-            detail="Comparison evidence. Never the source of a claim."
-            photo={after}
-            knownPhotos={knownAfter}
+
+          <ClaimList
+            claims={claims}
+            selectedId={selectedId}
+            onSelect={selectClaim}
           />
         </div>
 
-        {before && after ? (
-          <div className="mt-4">
-            <CompareCanvas before={before} after={after} />
-          </div>
-        ) : (
-          <div className="panel mt-4 p-4">
-            <div className="flex items-center justify-between gap-3">
-              <p className="field-label">Compare</p>
-              <span className="chip text-muted">After photo needed</span>
-            </div>
-            <div className="mt-3 h-1.5 w-full bg-wash">
-              <div className="h-1.5 w-1/2 bg-line" />
-            </div>
-            <p className="mt-2 text-xs leading-5 text-muted">
-              The before/after wipe unlocks when both photos exist. A framing
-              signal will sit above it — a hint, not a verdict.
-            </p>
-          </div>
-        )}
+        <div className="order-4 space-y-4">
+          <ComparabilityPanel
+            pairId={pair.id}
+            state={comparability}
+            reason={comparabilityReason}
+            framingScore={framingScore}
+            framingWord={framingWord}
+            bothPhotosReady={Boolean(before && after)}
+          />
 
-        <div className="mt-4 border border-line bg-wash p-4">
-          <p className="field-label">Capture order</p>
-          <p className="mt-1 text-xs leading-5 text-muted">
-            Before is the source of every claim. After is comparison evidence
-            only. Replacing a photo re-runs every check and supersedes the old
-            row; a photo that sources a claim cannot be replaced until its
-            drafts are removed.
-          </p>
+          <PrivacyPanel before={before} after={after} pairPath={pairPath} />
+
+          <SubmitPanel
+            pairId={pair.id}
+            blockers={blockers}
+            draftClaims={claims.filter((claim) => claim.status === "draft").length}
+            pendingClaims={
+              claims.filter((claim) => claim.status === "pending").length
+            }
+            confirmedClaims={
+              claims.filter((claim) => claim.status === "confirmed").length
+            }
+          />
+
+          <PreflightPanel before={before} after={after} />
+
+          <SuggestionPanel
+            pairId={pair.id}
+            photoId={before?.id ?? null}
+            modelAvailable={modelAvailable}
+            initialSuggestions={initialSuggestions}
+            selectedSuggestionId={selectedSuggestionId}
+            editedRegion={region}
+            onSuggestionsSaved={handleSuggestionsSaved}
+            onSuggestionAccepted={handleSuggestionAccepted}
+            onSuggestionRejected={handleSuggestionRejected}
+            onSelectSuggestion={selectSuggestion}
+          />
         </div>
-      </section>
-
-      <aside className="space-y-3" aria-label="Evidence checks">
-        <PrivacyPanel
-          before={before}
-          after={after}
-          pairPath={pairPath}
-        />
-
-        <PreflightPanel before={before} after={after} />
-
-        <SuggestionPanel
-          pairId={pair.id}
-          photoId={before?.id ?? null}
-          modelAvailable={modelAvailable}
-          initialSuggestions={initialSuggestions}
-          selectedSuggestionId={selectedSuggestionId}
-          editedRegion={region}
-          onSuggestionsSaved={handleSuggestionsSaved}
-          onSuggestionAccepted={handleSuggestionAccepted}
-          onSuggestionRejected={handleSuggestionRejected}
-          onSelectSuggestion={selectSuggestion}
-        />
-
-        <ClaimForm
-          pairId={pair.id}
-          photoId={before?.id ?? null}
-          selectedClaim={selectedClaim}
-          region={region}
-          text={text}
-          category={category}
-          onTextChange={setText}
-          onCategoryChange={setCategory}
-          onMarkFull={markFull}
-          onClearRegion={clearRegion}
-          onSaved={handleSaved}
-          onDeleted={handleDeleted}
-        />
-
-        <ClaimList
-          claims={claims}
-          selectedId={selectedId}
-          onSelect={selectClaim}
-        />
-
-        <ComparabilityPanel
-          pairId={pair.id}
-          state={comparability}
-          reason={comparabilityReason}
-          framingScore={framingScore}
-          framingWord={framingWord}
-          bothPhotosReady={Boolean(before && after)}
-        />
-
-        <SubmitPanel
-          pairId={pair.id}
-          blockers={blockers}
-          submittedClaims={pendingClaims}
-        />
-      </aside>
+      </div>
     </div>
   );
 }

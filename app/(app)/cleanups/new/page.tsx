@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { CleanupForm } from "@/components/cleanup-form";
+import { Breadcrumbs, PageHeader } from "@/components/page-header";
 import { getCurrentUser } from "@/lib/session";
 import { todayIso } from "@/lib/validation";
 
@@ -17,27 +17,19 @@ export default async function NewCleanupPage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-6 py-10">
-      <nav className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.1em] text-muted">
-        <Link href="/cleanups" className="hover:text-ink">
-          Cleanups
-        </Link>
-        <span aria-hidden="true">/</span>
-        <span className="text-ink">New</span>
-      </nav>
+    <div className="page">
+      <Breadcrumbs
+        items={[{ label: "Cleanups", href: "/cleanups" }, { label: "New" }]}
+      />
 
-      <header className="mt-5 max-w-2xl border-b border-line pb-6">
-        <p className="field-label">Open a record</p>
-        <h1 className="mt-2 font-serif text-4xl leading-[1.08] tracking-[-0.01em] text-ink">
-          A cleanup starts with a place and a date.
-        </h1>
-        <p className="mt-3 text-sm leading-6 text-muted">
-          The site label and public note may be shared with a sponsor. Internal
-          conditions stay in the workspace.
-        </p>
-      </header>
+      <div className="mt-5">
+        <PageHeader
+          title="A cleanup starts with a place and a date."
+          description="The site label and public note may be shared with a sponsor. Internal conditions stay in the workspace."
+        />
+      </div>
 
-      <div className="mt-8">
+      <div className="mt-9">
         <CleanupForm today={todayIso()} leadName={user.display_name} />
       </div>
     </div>

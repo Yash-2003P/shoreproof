@@ -56,7 +56,7 @@ export function SetupForm() {
             {state.errors.displayName}
           </p>
         ) : (
-          <p className="mt-2 text-xs leading-5 text-muted">
+          <p className="mt-2 text-sm leading-6 text-muted">
             This is the name shown on claims and decisions. It is public if a
             record is published.
           </p>
@@ -69,20 +69,20 @@ export function SetupForm() {
           {roles.map((role, index) => (
             <label
               key={role.value}
-              className="flex cursor-pointer items-start gap-3 border border-line bg-paper p-3 transition-colors has-[:checked]:border-tide has-[:checked]:bg-wash"
+              className="flex cursor-pointer items-start gap-3 border border-line bg-paper p-3.5 transition-colors has-[:checked]:border-tide has-[:checked]:bg-wash"
             >
               <input
                 type="radio"
                 name="role"
                 value={role.value}
                 defaultChecked={index === 0}
-                className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--tide)]"
+                className="mt-0.5 shrink-0 accent-[var(--tide)]"
               />
               <span>
-                <span className="block text-sm font-medium text-ink">
+                <span className="block text-base font-medium text-ink">
                   {role.label}
                 </span>
-                <span className="mt-0.5 block text-xs leading-5 text-muted">
+                <span className="mt-0.5 block text-sm leading-6 text-muted">
                   {role.detail}
                 </span>
               </span>
@@ -99,10 +99,10 @@ export function SetupForm() {
           <input
             type="checkbox"
             name="acknowledge"
-            className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--tide)]"
+            className="mt-0.5 shrink-0 accent-[var(--tide)]"
             aria-invalid={Boolean(state.errors?.acknowledge)}
           />
-          <span className="text-xs leading-5 text-muted">
+          <span className="text-sm leading-6 text-muted">
             I understand this workspace stores display names, not accounts, and
             that I need consent from anyone identifiable in a photo before I
             upload it.

@@ -190,7 +190,7 @@ export function renderExportHtml(bundle: ExportBundle): string {
       --flag: #e4572e;
       --flag-ink: #a63a1c;
       --line: #c6d1d2;
-      --muted: #5a6a6d;
+      --muted: #526366;
       --wash: #e6edeb;
     }
     * { box-sizing: border-box; }
@@ -199,14 +199,15 @@ export function renderExportHtml(bundle: ExportBundle): string {
       margin: 0;
       background: var(--salt);
       color: var(--ink);
-      font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
       text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
     }
-    .wrap { max-width: 940px; margin: 0 auto; padding: 44px 24px 96px; }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 48px 24px 104px; }
     .mono, .hash, .kicker {
       font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
-      font-size: 11px;
-      letter-spacing: 0.06em;
+      font-size: 12px;
+      letter-spacing: 0.04em;
     }
     .kicker {
       margin: 0;
@@ -217,50 +218,52 @@ export function renderExportHtml(bundle: ExportBundle): string {
     .muted { color: var(--muted); }
     .wordmark {
       font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      font-size: 12px;
-      letter-spacing: 0.32em;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.26em;
       text-transform: uppercase;
       color: var(--tide);
     }
-    .cover { border-bottom: 3px solid var(--ink); padding-bottom: 28px; }
+    .cover { border-bottom: 3px solid var(--ink); padding-bottom: 32px; }
     .cover h1 {
-      margin: 14px 0 6px;
+      margin: 16px 0 8px;
       font-family: Georgia, "Times New Roman", serif;
       font-weight: 500;
-      font-size: 44px;
+      font-size: 46px;
       line-height: 1.05;
       letter-spacing: -0.01em;
     }
-    .cover .meta { margin: 10px 0 0; color: var(--muted); font-size: 13px; }
-    .cover-row { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 18px; }
+    .cover .meta { margin: 8px 0 0; color: var(--muted); font-size: 14px; line-height: 1.5; }
+    .cover-row { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 20px; }
     .stamp {
       display: inline-block;
       border: 2px solid var(--tide);
       color: var(--tide);
-      padding: 6px 12px;
+      padding: 7px 13px;
       font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      font-size: 10px;
-      letter-spacing: 0.14em;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
       transform: rotate(-1.5deg);
     }
-    .method { margin: 30px 0 8px; max-width: 720px; }
-    .method h2 { font-family: Georgia, serif; font-weight: 500; font-size: 22px; margin: 0 0 8px; }
-    .method p { margin: 0 0 10px; color: var(--muted); font-size: 14px; line-height: 1.6; }
+    .method { margin: 34px 0 8px; max-width: 720px; }
+    .method h2 { font-family: Georgia, serif; font-weight: 500; font-size: 26px; margin: 0 0 10px; }
+    .method p { margin: 0 0 12px; color: var(--muted); font-size: 16px; line-height: 1.65; }
     .receipt {
       position: relative;
       background: var(--paper);
       border: 1px solid var(--line);
       box-shadow: 0 1px 0 rgba(14, 36, 51, 0.06);
-      padding: 22px;
-      margin: 26px 0;
+      padding: 26px;
+      margin: 28px 0;
     }
     .receipt::after {
       content: "";
       position: absolute;
-      left: 16px;
-      right: 16px;
-      bottom: 9px;
+      left: 18px;
+      right: 18px;
+      bottom: 10px;
       border-bottom: 1px dashed var(--line);
     }
     .receipt-head { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
@@ -269,82 +272,83 @@ export function renderExportHtml(bundle: ExportBundle): string {
       display: block;
       width: 100%;
       max-width: 640px;
-      margin: 16px 0 0;
+      margin: 18px 0 0;
       border: 1px solid var(--line);
       background: var(--ink);
     }
     .receipt h3 {
-      margin: 16px 0 4px;
+      margin: 18px 0 5px;
       font-family: Georgia, "Times New Roman", serif;
       font-weight: 500;
-      font-size: 21px;
-      line-height: 1.25;
+      font-size: 24px;
+      line-height: 1.3;
     }
     .category {
       margin: 0;
       font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      font-size: 10px;
-      letter-spacing: 0.12em;
+      font-size: 12px;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
       color: var(--tide);
     }
     .facts {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px 24px;
-      margin: 18px 0 0;
-      padding: 16px 0 0;
+      gap: 16px 24px;
+      margin: 20px 0 0;
+      padding: 18px 0 0;
       border-top: 1px solid var(--line);
     }
     .facts dt {
       font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      font-size: 9px;
-      letter-spacing: 0.12em;
+      font-size: 12px;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
       color: var(--muted);
     }
-    .facts dd { margin: 3px 0 0; font-size: 13px; line-height: 1.45; }
+    .facts dd { margin: 4px 0 0; font-size: 15px; line-height: 1.55; }
     .checks {
-      margin: 16px 0 0;
-      padding: 12px 14px;
+      margin: 18px 0 0;
+      padding: 14px 16px;
       background: var(--wash);
       border-left: 3px solid var(--tide);
     }
     .hash {
-      margin: 5px 0 0;
+      margin: 6px 0 0;
       word-break: break-all;
       color: var(--ink);
-      font-size: 10px;
-      line-height: 1.5;
-    }
-    .provenance {
-      margin: 16px 0 0;
       font-size: 12px;
       line-height: 1.55;
+    }
+    .provenance {
+      margin: 18px 0 0;
+      font-size: 15px;
+      line-height: 1.6;
       color: var(--muted);
       border-top: 1px solid var(--line);
-      padding-top: 12px;
+      padding-top: 14px;
     }
-    .appendix { margin-top: 52px; border-top: 3px solid var(--ink); padding-top: 24px; }
-    .appendix h2 { font-family: Georgia, serif; font-weight: 500; font-size: 26px; margin: 8px 0 6px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: 12px; }
-    th, td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+    .appendix { margin-top: 60px; border-top: 3px solid var(--ink); padding-top: 28px; }
+    .appendix h2 { font-family: Georgia, serif; font-weight: 500; font-size: 28px; margin: 8px 0 8px; }
+    .appendix > .muted { max-width: 680px; font-size: 16px; line-height: 1.65; }
+    table { width: 100%; border-collapse: collapse; margin-top: 18px; font-size: 14px; }
+    th, td { text-align: left; vertical-align: top; padding: 10px 12px; border-bottom: 1px solid var(--line); }
     th {
       font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      font-size: 9px;
-      letter-spacing: 0.1em;
+      font-size: 12px;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
       color: var(--muted);
       background: var(--wash);
     }
-    td.details { max-width: 360px; word-break: break-all; font-size: 9px; }
+    td.details { max-width: 360px; word-break: break-all; font-size: 12px; }
     footer {
-      margin-top: 56px;
+      margin-top: 60px;
       border-top: 1px solid var(--line);
-      padding-top: 18px;
+      padding-top: 20px;
       color: var(--muted);
-      font-size: 11px;
-      line-height: 1.6;
+      font-size: 13px;
+      line-height: 1.65;
     }
     @media print {
       body { background: #ffffff; }
@@ -354,7 +358,8 @@ export function renderExportHtml(bundle: ExportBundle): string {
     }
     @media (max-width: 620px) {
       .facts { grid-template-columns: 1fr; }
-      .cover h1 { font-size: 34px; }
+      .cover h1 { font-size: 36px; }
+      .wrap { padding: 32px 18px 80px; }
     }
   </style>
 </head>

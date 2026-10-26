@@ -60,6 +60,8 @@ export type PairWithCounts = Pair & {
   before_count: number;
   after_count: number;
   claim_count: number;
+  before_photo_id: string | null;
+  after_photo_id: string | null;
 };
 
 export type PairWithCleanup = Pair & {

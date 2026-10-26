@@ -18,12 +18,16 @@ export function AppShell({
 
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="border-t-2 border-tide border-b border-line bg-salt">
-        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center gap-x-8 gap-y-3 px-6 py-4">
+      <a href="#main" className="skip-link">
+        Skip to content
+      </a>
+
+      <header className="sticky top-0 z-40 border-t-2 border-tide border-b border-line bg-salt">
+        <div className="mx-auto flex w-full max-w-[1480px] flex-wrap items-center gap-x-8 gap-y-1 px-5 py-2 sm:px-8">
           <Wordmark />
           <AppNav reviewCount={reviewCount} />
-          <div className="ml-auto flex items-center gap-4">
-            <span className="hidden font-mono text-[9px] uppercase tracking-[0.14em] text-muted md:inline">
+          <div className="ml-auto flex items-center gap-3">
+            <span className="hidden text-xs text-muted lg:inline">
               Local workspace
             </span>
             <UserSwitcher users={users} currentId={user.id} />
@@ -31,13 +35,13 @@ export function AppShell({
         </div>
       </header>
 
-      <main className="flex-1">{children}</main>
+      <main id="main" className="flex-1">
+        {children}
+      </main>
 
       <footer className="border-t border-line">
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-2 px-6 py-4 text-xs text-muted sm:flex-row sm:items-center sm:justify-between">
-          <p className="font-mono text-[10px] uppercase tracking-[0.12em]">
-            ShoreProof · evidence record
-          </p>
+        <div className="mx-auto flex w-full max-w-[1480px] flex-col gap-1 px-5 py-5 text-xs text-muted sm:flex-row sm:items-center sm:justify-between sm:px-8">
+          <p className="font-medium text-ink">ShoreProof · evidence record</p>
           <p>Photos are sanitized on upload. Display names only.</p>
         </div>
       </footer>

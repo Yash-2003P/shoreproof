@@ -6,6 +6,7 @@ import {
   rejectSuggestion,
   saveSuggestions,
 } from "@/app/(app)/cleanups/actions";
+import { Disclosure } from "@/components/disclosure";
 import { DETECTOR_DISCLOSURE, DETECTOR_MODEL } from "@/lib/detector/model";
 import { detectCandidates } from "@/lib/detector/detect";
 import { ICC_CATEGORIES } from "@/lib/icc";
@@ -169,88 +170,82 @@ export function SuggestionPanel({
   }
 
   const busy = running || saving;
+  const meta =
+    suggestions.length === 0
+      ? "Optional · proposes boxes only"
+      : `${open.length} open · ${accepted} accepted · ${rejected} rejected`;
 
   return (
-    <section className="panel" aria-label="AI suggestions">
-      <div className="flex items-center justify-between gap-2 border-b border-line px-4 py-3">
-        <p className="field-label">AI suggestions</p>
-        <span className="mono text-[10px] text-muted">
-          {suggestions.length === 0
-            ? "No boxes"
-            : `${open.length} open · ${accepted} accepted · ${rejected} rejected`}
-        </span>
-      </div>
+    <Disclosure
+      title="AI suggestions"
+      meta={meta}
+      defaultOpen={open.length > 0}
+    >
+      <p className="text-sm leading-6 text-muted">{DETECTOR_DISCLOSURE}</p>
 
-      <div className="px-4 py-3">
-        <p className="text-[11px] leading-4 text-muted">{DETECTOR_DISCLOSURE}</p>
+      <button
+        type="button"
+        className="btn btn-ghost mt-3 w-full"
+        onClick={runDetector}
+        disabled={!photoId || !modelAvailable || busy}
+      >
+        {running
+          ? "Running…"
+          : modelAvailable
+            ? "Suggest candidates"
+            : "Detector not loaded"}
+      </button>
 
-        <button
-          type="button"
-          className="btn btn-ghost mt-3 w-full"
-          onClick={runDetector}
-          disabled={!photoId || !modelAvailable || busy}
-        >
-          {running
-            ? "Running…"
-            : modelAvailable
-              ? "Suggest candidates"
-              : "Detector not loaded"}
-        </button>
+      {!modelAvailable ? (
+        <p className="mt-2 text-xs text-flag-ink">
+          Detector not loaded. Check `npm run fetch-model`.
+        </p>
+      ) : null}
 
-        {!modelAvailable ? (
-          <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.08em] text-flag-ink">
-            Detector not loaded. Check `npm run fetch-model`.
-          </p>
-        ) : null}
+      {!photoId ? (
+        <p className="mt-2 text-xs leading-5 text-muted">
+          Add a before photo to run the detector.
+        </p>
+      ) : null}
 
-        {!photoId ? (
-          <p className="mt-1 text-[11px] leading-4 text-muted">
-            Add a before photo to run the detector.
-          </p>
-        ) : null}
+      {status ? (
+        <p className="mt-2 text-xs text-tide" role="status">
+          {status}
+        </p>
+      ) : null}
 
-        {status ? (
-          <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.08em] text-tide">
-            {status}
-          </p>
-        ) : null}
+      {state.message ? (
+        <p className="mt-2 text-xs text-muted" role="status">
+          {state.message}
+        </p>
+      ) : null}
 
-        {state.message ? (
-          <p
-            className="mt-2 font-mono text-[10px] uppercase tracking-[0.08em] text-muted"
-            role="status"
-          >
-            {state.message}
-          </p>
-        ) : null}
+      {suggestions.length > 0 ? (
+        <p className="mono mt-2 text-xs leading-5 text-muted">
+          {DETECTOR_MODEL.name} · {DETECTOR_MODEL.license} · sha256{" "}
+          {DETECTOR_MODEL.sha256.slice(0, 12)}…
+        </p>
+      ) : null}
 
-        {suggestions.length > 0 ? (
-          <p className="mt-2 font-mono text-[9px] uppercase tracking-[0.08em] text-muted">
-            {DETECTOR_MODEL.name} · {DETECTOR_MODEL.license} · sha256{" "}
-            {DETECTOR_MODEL.sha256.slice(0, 12)}…
-          </p>
-        ) : null}
-
-        {open.length === 0 && suggestions.length > 0 ? (
-          <p className="mt-2 text-[11px] leading-4 text-muted">
-            Every proposed box was answered. Mark anything the model missed.
-          </p>
-        ) : null}
-      </div>
+      {open.length === 0 && suggestions.length > 0 ? (
+        <p className="mt-2 text-sm leading-6 text-muted">
+          Every proposed box was answered. Mark anything the model missed.
+        </p>
+      ) : null}
 
       {open.length > 0 ? (
-        <ul className="divide-y divide-line border-t border-line">
+        <ul className="mt-4 divide-y divide-line border-t border-line">
           {open.map((suggestion) => {
             const chosen = categoryFor(suggestion);
             const uncertain = suggestion.mapping_uncertain === 1;
             const selected = selectedSuggestionId === suggestion.id;
 
             return (
-              <li key={suggestion.id} className="px-4 py-3">
+              <li key={suggestion.id} className="py-4">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="mono text-[10px] uppercase tracking-[0.08em] text-ink">
+                  <span className="text-sm font-semibold text-ink">
                     {suggestion.coco_class}{" "}
-                    <span className="text-muted">
+                    <span className="mono text-xs font-normal text-muted">
                       {suggestion.confidence.toFixed(2)}
                     </span>
                   </span>
@@ -259,7 +254,7 @@ export function SuggestionPanel({
                   ) : null}
                 </div>
 
-                <p className="mt-1 text-[11px] leading-4 text-muted">
+                <p className="mt-1 text-xs leading-5 text-muted">
                   {suggestion.icc_category
                     ? `${suggestion.icc_category}${uncertain ? "?" : ""}`
                     : "Unmapped — choose a category to accept"}
@@ -270,7 +265,7 @@ export function SuggestionPanel({
                 </label>
                 <select
                   id={`category-${suggestion.id}`}
-                  className="select mt-2 min-h-9 text-[12px]"
+                  className="select mt-2.5"
                   value={chosen}
                   onChange={(event) =>
                     setCategories((current) => ({
@@ -287,10 +282,10 @@ export function SuggestionPanel({
                   ))}
                 </select>
 
-                <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                <div className="mt-2.5 flex flex-wrap items-center gap-2">
                   <button
                     type="button"
-                    className="btn btn-primary h-8 min-h-8 px-2 text-[11px]"
+                    className="btn btn-primary"
                     disabled={!chosen || busy}
                     onClick={() => accept(suggestion)}
                   >
@@ -298,7 +293,7 @@ export function SuggestionPanel({
                   </button>
                   <button
                     type="button"
-                    className="btn btn-ghost h-8 min-h-8 px-2 text-[11px]"
+                    className="btn btn-ghost"
                     disabled={busy}
                     onClick={() => onSelectSuggestion(suggestion)}
                   >
@@ -306,13 +301,13 @@ export function SuggestionPanel({
                   </button>
                 </div>
 
-                <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                <div className="mt-2.5 flex flex-wrap items-center gap-2">
                   <label htmlFor={`reason-${suggestion.id}`} className="sr-only">
                     Reason for rejecting {suggestion.coco_class}
                   </label>
                   <select
                     id={`reason-${suggestion.id}`}
-                    className="select mt-0 min-h-8 w-auto flex-1 text-[11px]"
+                    className="select min-w-0 flex-1"
                     value={reasons[suggestion.id] ?? ""}
                     onChange={(event) =>
                       setReasons((current) => ({
@@ -330,7 +325,7 @@ export function SuggestionPanel({
                   </select>
                   <button
                     type="button"
-                    className="btn btn-ghost h-8 min-h-8 px-2 text-[11px]"
+                    className="btn btn-ghost"
                     disabled={busy}
                     onClick={() => reject(suggestion)}
                   >
@@ -339,7 +334,7 @@ export function SuggestionPanel({
                 </div>
 
                 {selected && editedRegion ? (
-                  <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.08em] text-muted">
+                  <p className="mono mt-2 text-xs text-muted">
                     Region {formatRegion(editedRegion)}
                   </p>
                 ) : null}
@@ -350,11 +345,11 @@ export function SuggestionPanel({
       ) : null}
 
       {suggestions.length > 0 ? (
-        <p className="border-t border-line px-4 py-2 text-[11px] leading-4 text-muted">
+        <p className="mt-3 border-t border-line pt-3 text-xs leading-5 text-muted">
           No accept-all. A box becomes a claim only when a human accepts it and
           writes the observation.
         </p>
       ) : null}
-    </section>
+    </Disclosure>
   );
 }

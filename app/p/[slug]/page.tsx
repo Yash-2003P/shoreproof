@@ -36,7 +36,7 @@ export default async function PublicRecordPage({
   return (
     <div className="flex min-h-screen flex-col bg-salt">
       <header className="border-t-2 border-tide border-b border-line">
-        <div className="mx-auto flex w-full max-w-3xl flex-wrap items-center justify-between gap-3 px-6 py-4">
+        <div className="mx-auto flex w-full max-w-3xl flex-wrap items-center justify-between gap-3 px-5 py-3 sm:px-8">
           <Wordmark href="/" />
           <span className="chip chip-tide">Public record</span>
         </div>
@@ -47,12 +47,15 @@ export default async function PublicRecordPage({
       </main>
 
       <footer className="border-t border-line">
-        <div className="mx-auto flex w-full max-w-3xl flex-col gap-2 px-6 py-4 text-[11px] leading-5 text-muted sm:flex-row sm:items-center sm:justify-between">
+        <div className="mx-auto flex w-full max-w-3xl flex-col gap-2 px-5 py-5 text-xs leading-5 text-muted sm:flex-row sm:items-center sm:justify-between sm:px-8">
           <p>
             Read-only. Confirmed claims only. This page is not indexed and
             cannot be found from the workspace.
           </p>
-          <Link href="/privacy" className="link-underline text-tide">
+          <Link
+            href="#method"
+            className="inline-flex min-h-11 items-center font-medium text-tide link-underline"
+          >
             How photos are handled
           </Link>
         </div>

@@ -12,7 +12,7 @@ export function PersonForm() {
   return (
     <form action={formAction} className="panel p-5">
       <p className="field-label">Add a person</p>
-      <p className="mt-2 text-xs leading-5 text-muted">
+      <p className="mt-2 text-sm leading-6 text-muted">
         A second display name lets someone else review claims. There is still no
         email or password.
       </p>
@@ -60,7 +60,7 @@ export function PersonForm() {
       </button>
 
       {state.message ? (
-        <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.08em] text-tide">
+        <p className="mt-3 text-sm text-tide">
           {state.message}
         </p>
       ) : null}

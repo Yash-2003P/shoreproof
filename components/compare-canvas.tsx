@@ -43,9 +43,9 @@ export function CompareCanvas({ before, after }: CompareCanvasProps) {
 
   return (
     <section aria-label="Compare before and after">
-      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-        <p className="field-label">Compare</p>
-        <p className="mono text-[10px] text-muted">
+      <div className="mb-2.5 flex flex-wrap items-center justify-between gap-2">
+        <h3 className="panel-title">Compare</h3>
+        <p className="text-xs text-muted">
           Drag the divider · arrow keys move it
         </p>
       </div>
@@ -87,28 +87,33 @@ export function CompareCanvas({ before, after }: CompareCanvasProps) {
         />
 
         <div className="pointer-events-none absolute inset-x-0 top-0 flex justify-between gap-2 p-2">
-          <span className="bg-ink/85 px-2 py-1 font-mono text-[9px] uppercase tracking-[0.1em] text-salt">
+          <span className="bg-ink/85 px-2.5 py-1.5 text-xs font-medium text-salt">
             Before
           </span>
-          <span className="bg-paper/90 px-2 py-1 font-mono text-[9px] uppercase tracking-[0.1em] text-ink">
+          <span className="bg-paper/90 px-2.5 py-1.5 text-xs font-medium text-ink">
             After
           </span>
         </div>
       </div>
 
-      <label htmlFor="compare-position" className="sr-only">
-        Comparison position
-      </label>
-      <input
-        id="compare-position"
-        type="range"
-        min={0}
-        max={100}
-        step={1}
-        value={Math.round(position)}
-        onChange={(event) => setPosition(Number(event.target.value))}
-        className="mt-2 w-full accent-[var(--tide)]"
-      />
+      <div className="mt-2 flex items-center gap-3">
+        <label htmlFor="compare-position" className="text-xs text-muted">
+          Wipe position
+        </label>
+        <input
+          id="compare-position"
+          type="range"
+          min={0}
+          max={100}
+          step={1}
+          value={Math.round(position)}
+          onChange={(event) => setPosition(Number(event.target.value))}
+          className="h-11 min-w-0 flex-1 accent-[var(--tide)]"
+        />
+        <span className="mono w-10 text-right text-xs text-muted">
+          {Math.round(position)}%
+        </span>
+      </div>
 
       <p className="mt-1 text-xs leading-5 text-muted">
         The wipe is a visual aid. The claim always points at the before photo,

@@ -1,3 +1,4 @@
+import { Disclosure } from "@/components/disclosure";
 import {
   blurLevel,
   duplicateLevel,
@@ -26,14 +27,14 @@ function Row({
   detail?: string;
 }) {
   return (
-    <div className="border-b border-line py-2 last:border-0">
+    <div className="border-b border-line py-2.5 last:border-0">
       <div className="flex items-center justify-between gap-2">
         <span className="field-label">{label}</span>
         {level ? <LevelChip level={level} /> : null}
       </div>
-      <p className="mono mt-1 text-[10px] text-ink">{value}</p>
+      <p className="mono mt-1 text-sm text-ink">{value}</p>
       {detail ? (
-        <p className="mt-0.5 text-[10px] leading-4 text-muted">{detail}</p>
+        <p className="mt-0.5 text-xs leading-5 text-muted">{detail}</p>
       ) : null}
     </div>
   );
@@ -42,7 +43,7 @@ function Row({
 function PhotoChecks({ photo, side }: { photo: PhotoSummary | null; side: string }) {
   if (!photo) {
     return (
-      <div className="py-2">
+      <div className="py-2.5">
         <p className="field-label">{side}</p>
         <p className="mt-1 text-xs leading-5 text-muted">
           Checks run when a photo is added.
@@ -54,10 +55,10 @@ function PhotoChecks({ photo, side }: { photo: PhotoSummary | null; side: string
   const duplicate = duplicateLevel(photo.near_duplicate_distance);
 
   return (
-    <div className="py-2">
+    <div className="py-2.5">
       <div className="flex items-center justify-between gap-2">
-        <p className="field-label">{side}</p>
-        <span className="mono text-[10px] text-muted">
+        <p className="text-sm font-semibold text-ink">{side}</p>
+        <span className="mono text-xs text-muted">
           {photo.sha256.slice(0, 8)}…
         </span>
       </div>
@@ -99,6 +100,16 @@ function PhotoChecks({ photo, side }: { photo: PhotoSummary | null; side: string
   );
 }
 
+function warningCount(photo: PhotoSummary | null): number {
+  if (!photo) return 0;
+  return [
+    resolutionLevel(Math.max(photo.width, photo.height)) !== "pass",
+    blurLevel(photo.blur_score) !== "pass",
+    exposureLevel(photo.exposure_clipped) !== "pass",
+    duplicateLevel(photo.near_duplicate_distance) !== "none",
+  ].filter(Boolean).length;
+}
+
 export function PreflightPanel({
   before,
   after,
@@ -106,22 +117,25 @@ export function PreflightPanel({
   before: PhotoSummary | null;
   after: PhotoSummary | null;
 }) {
+  const warnings = warningCount(before) + warningCount(after);
+  const photos = [before ? "before" : null, after ? "after" : null].filter(
+    Boolean,
+  );
+  const meta =
+    photos.length === 0
+      ? "Checks run when a photo is added"
+      : `${photos.join(" + ")} · ${warnings} warning${warnings === 1 ? "" : "s"}`;
+
   return (
-    <section className="panel p-4">
-      <div className="flex items-center justify-between gap-2">
-        <p className="field-label">Preflight</p>
-        <span className="mono text-[9px] uppercase tracking-[0.1em] text-muted">
-          Server canonical
-        </span>
-      </div>
-      <div className="mt-2 divide-y divide-line">
+    <Disclosure title="Photo checks" meta={meta}>
+      <div className="divide-y divide-line">
         <PhotoChecks photo={before} side="Before" />
         <PhotoChecks photo={after} side="After" />
       </div>
       <p className="mt-3 text-xs leading-5 text-muted">
         A warning never blocks the upload. It stays attached to the photo and
-        can become a review flag.
+        can become a review flag. These are the server-canonical numbers.
       </p>
-    </section>
+    </Disclosure>
   );
 }

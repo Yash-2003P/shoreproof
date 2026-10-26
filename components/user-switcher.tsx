@@ -17,7 +17,7 @@ export function UserSwitcher({
     <form action={switchUser} className="flex items-center gap-2">
       <label
         htmlFor="user-switcher"
-        className="hidden font-mono text-[9px] uppercase tracking-[0.12em] text-muted sm:inline"
+        className="hidden text-xs text-muted sm:inline"
       >
         Acting as
       </label>
@@ -26,7 +26,7 @@ export function UserSwitcher({
         name="userId"
         defaultValue={currentId}
         onChange={(event) => event.currentTarget.form?.requestSubmit()}
-        className="h-8 max-w-[10rem] border border-line bg-paper px-2 font-mono text-[11px] text-ink"
+        className="h-11 max-w-[9.5rem] rounded-sm border border-line-strong bg-paper px-2.5 text-sm text-ink sm:max-w-[12rem]"
       >
         {users.map((user) => (
           <option key={user.id} value={user.id}>
@@ -36,7 +36,7 @@ export function UserSwitcher({
       </select>
       <input type="hidden" name="next" value={pathname} />
       <noscript>
-        <button type="submit" className="btn btn-ghost h-8 min-h-8 px-2">
+        <button type="submit" className="btn btn-ghost px-3">
           Switch
         </button>
       </noscript>

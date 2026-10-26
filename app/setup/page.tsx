@@ -17,18 +17,16 @@ export default function SetupPage() {
   return (
     <main className="flex min-h-screen flex-col">
       <header className="border-t-2 border-tide border-b border-line bg-salt">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-5">
+        <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-5 py-3 sm:px-8">
           <Wordmark href="/setup" />
-          <span className="field-label">First run</span>
+          <span className="chip chip-tide">First run</span>
         </div>
       </header>
 
-      <div className="mx-auto grid w-full max-w-6xl flex-1 gap-12 px-6 py-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 lg:py-20">
+      <div className="mx-auto grid w-full max-w-6xl flex-1 gap-12 px-5 py-12 sm:px-8 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 lg:py-20">
         <section className="max-w-xl">
           <p className="field-label">Workspace setup</p>
-          <h1 className="mt-3 font-serif text-4xl leading-[1.08] tracking-[-0.01em] text-ink sm:text-5xl">
-            Who is keeping the record?
-          </h1>
+          <h1 className="display-1 mt-3">Who is keeping the record?</h1>
           <p className="mt-5 max-w-lg text-base leading-7 text-muted">
             ShoreProof asks for a display name, not an account. It appears on
             the claims you collect and the decisions you make — so a sponsor can
@@ -54,11 +52,11 @@ export default function SetupPage() {
               ],
             ].map(([number, title, detail]) => (
               <li key={number} className="flex gap-4">
-                <span className="mono pt-0.5 text-[11px] text-tide">
+                <span className="mono pt-0.5 text-sm text-tide">
                   {number}
                 </span>
                 <span>
-                  <span className="block text-sm font-medium text-ink">
+                  <span className="block text-base font-medium text-ink">
                     {title}
                   </span>
                   <span className="mt-1 block text-sm leading-6 text-muted">
@@ -96,7 +94,7 @@ export default function SetupPage() {
 
         <section className="lg:pt-12">
           <SetupForm />
-          <p className="mt-4 text-center font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
+          <p className="mt-4 text-center text-xs text-muted">
             Local workspace · no account · no analytics
           </p>
         </section>

@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ClaimReview } from "@/components/claim-review";
+import { Disclosure } from "@/components/disclosure";
+import { PageHeader } from "@/components/page-header";
 import { ReviewQueue, type QueueItemView } from "@/components/review-queue";
 import {
   getClaimLineage,
@@ -11,6 +13,10 @@ import { toClaimReviewData } from "@/lib/review-data";
 import { getCurrentUser } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
+
+export const metadata = {
+  title: "Review",
+};
 
 export default async function ReviewPage({
   searchParams,
@@ -41,50 +47,48 @@ export default async function ReviewPage({
   }));
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-6 py-8">
-      <header className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="font-display text-2xl text-ink">Review</h1>
-          <p className="mt-1 max-w-2xl text-sm leading-5 text-muted">
-            The riskiest claims first. Flags are hints for your judgment, not
-            verdicts — every decision records who made it and when.
-          </p>
-        </div>
-        <Link
-          href="/cleanups"
-          className="font-mono text-[10px] uppercase tracking-[0.1em] text-muted hover:text-ink"
-        >
-          Cleanups
-        </Link>
-      </header>
+    <div className="page page-wide">
+      <PageHeader
+        title="Review"
+        description="The riskiest claims first. Flags are hints for your judgment, not verdicts — every decision records who made it and when."
+        meta={
+          <span>
+            {entries.length} {entries.length === 1 ? "claim" : "claims"} waiting
+            {returned.length > 0
+              ? ` · ${returned.length} returned to collectors`
+              : ""}
+          </span>
+        }
+      />
 
       {returned.length > 0 ? (
-        <section aria-label="Returned claims" className="panel mt-6 p-4">
-          <p className="field-label">Returned to collectors</p>
-          <ul className="mt-2 space-y-1.5">
+        <Disclosure
+          title="Returned to collectors"
+          meta={`${returned.length} ${
+            returned.length === 1 ? "claim needs" : "claims need"
+          } more evidence`}
+          className="mt-6"
+        >
+          <ul className="space-y-3">
             {returned.map((claim) => (
-              <li
-                key={claim.id}
-                className="text-[13px] leading-5 text-muted"
-              >
+              <li key={claim.id} className="dense-text">
                 <Link
                   href={`/review/${claim.id}`}
-                  className="font-mono text-[11px] uppercase tracking-[0.06em] text-tide hover:underline"
+                  className="inline-flex min-h-11 items-center font-medium text-tide link-underline"
                 >
                   {claim.cleanup_site} · {claim.pair_label}
-                </Link>{" "}
-                — {claim.decision_note ?? "Needs more evidence."}
+                </Link>
+                <p className="mt-0.5 text-xs leading-5 text-muted">
+                  {claim.decision_note ?? "Needs more evidence."}
+                </p>
               </li>
             ))}
           </ul>
-        </section>
+        </Disclosure>
       ) : null}
 
-      <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(280px,340px)_1fr]">
-        <ReviewQueue
-          items={items}
-          selectedId={selected?.claim.id ?? null}
-        />
+      <div className="mt-7 grid items-start gap-6 lg:grid-cols-[minmax(300px,380px)_1fr]">
+        <ReviewQueue items={items} selectedId={selected?.claim.id ?? null} />
 
         {selected ? (
           <ClaimReview
@@ -95,8 +99,10 @@ export default async function ReviewPage({
           />
         ) : (
           <div className="panel p-6">
-            <p className="text-sm leading-5 text-muted">
-              Nothing waiting. Confirmed claims are in the record.
+            <h2 className="panel-title">Nothing waiting</h2>
+            <p className="dense-text mt-2 text-muted">
+              Confirmed claims are in the record. New submissions will appear
+              here.
             </p>
           </div>
         )}

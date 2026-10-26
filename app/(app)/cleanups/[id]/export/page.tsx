@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { EvidencePack } from "@/components/evidence-pack";
+import { Breadcrumbs, PageHeader } from "@/components/page-header";
 import { PublishPanel } from "@/components/publish-panel";
 import { getCleanup } from "@/lib/cleanups";
 import {
@@ -8,9 +9,13 @@ import {
   exportBlockers,
   publicBlockers,
 } from "@/lib/export";
-import { formatTimestamp } from "@/lib/format";
+import { formatDate, formatTimestamp } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
+
+export const metadata = {
+  title: "Export",
+};
 
 export default async function ExportPage({
   params,
@@ -32,48 +37,42 @@ export default async function ExportPage({
       : null;
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-6 py-8">
-      <header>
-        <Link
-          href={`/cleanups/${cleanup.id}`}
-          className="font-mono text-[10px] uppercase tracking-[0.1em] text-muted hover:text-ink"
-        >
-          ← {cleanup.site}
-        </Link>
-        <div className="mt-3 flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="field-label">Evidence pack</p>
-            <h1 className="mt-1 font-display text-3xl text-ink">
-              Export and publish
-            </h1>
-            <p className="mt-2 max-w-2xl text-sm leading-5 text-muted">
-              Every confirmed claim carries its crop, sanitized source hash,
-              region, collector, reviewer, timestamp, checks, comparability, and
-              AI provenance. Rejected and returned claims appear only in the
-              export appendix.
-            </p>
-          </div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.1em] text-muted">
-            {cleanup.date} · {cleanup.lead_name}
-          </p>
-        </div>
-      </header>
+    <div className="page">
+      <Breadcrumbs
+        items={[
+          { label: "Cleanups", href: "/cleanups" },
+          { label: cleanup.site, href: `/cleanups/${cleanup.id}` },
+          { label: "Export" },
+        ]}
+      />
 
-      <div className="mt-7 grid gap-5 lg:grid-cols-[1.05fr_0.95fr]">
-        <section className="panel p-5" aria-labelledby="download-heading">
+      <div className="mt-5">
+        <PageHeader
+          title="Export and publish"
+          meta={
+            <span>
+              {cleanup.site} · {formatDate(cleanup.date)} · Lead {cleanup.lead_name}
+            </span>
+          }
+          description="Every confirmed claim carries its crop, sanitized source hash, region, collector, reviewer, timestamp, checks, comparability, and AI provenance. Rejected and returned claims appear only in the export appendix."
+        />
+      </div>
+
+      <div className="mt-8 grid gap-5 lg:grid-cols-[1.05fr_0.95fr]">
+        <section className="panel p-5 sm:p-6" aria-labelledby="download-heading">
           <p className="field-label">Download</p>
-          <h2 id="download-heading" className="mt-1 font-serif text-xl text-ink">
+          <h2 id="download-heading" className="heading-2 mt-1">
             The record leaves as a file
           </h2>
-          <p className="mt-2 text-xs leading-5 text-muted">
+          <p className="dense-text mt-2 text-muted">
             The pack is all-or-nothing: if a confirmed claim cannot be rendered
             correctly, ShoreProof refuses the download instead of quietly
             dropping it. Each completed download is written to the audit log.
           </p>
 
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            <div className="border border-line bg-wash p-3.5">
-              <p className="field-label">Self-contained HTML</p>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <div className="flex h-full flex-col border border-line bg-wash p-4">
+              <p className="panel-title">Self-contained HTML</p>
               <p className="mt-1 text-xs leading-5 text-muted">
                 Inline CSS and embedded crops. Opens offline; no fonts, scripts,
                 or network requests.
@@ -82,7 +81,7 @@ export default async function ExportPage({
                 href={`/api/cleanups/${cleanup.id}/export?format=html`}
                 download
                 aria-disabled={blockers.length > 0}
-                className={`btn btn-primary mt-3 w-full justify-center ${
+                className={`btn btn-primary mt-auto w-full justify-center ${
                   blockers.length > 0 ? "pointer-events-none opacity-50" : ""
                 }`}
               >
@@ -90,8 +89,8 @@ export default async function ExportPage({
               </a>
             </div>
 
-            <div className="border border-line bg-wash p-3.5">
-              <p className="field-label">Structured JSON</p>
+            <div className="flex h-full flex-col border border-line bg-wash p-4">
+              <p className="panel-title">Structured JSON</p>
               <p className="mt-1 text-xs leading-5 text-muted">
                 The same receipts and appendix, schema{" "}
                 <span className="font-mono">shoreproof.export.v1</span>.
@@ -100,7 +99,7 @@ export default async function ExportPage({
                 href={`/api/cleanups/${cleanup.id}/export?format=json`}
                 download
                 aria-disabled={blockers.length > 0}
-                className={`btn btn-ghost mt-3 w-full justify-center ${
+                className={`btn btn-ghost mt-auto w-full justify-center ${
                   blockers.length > 0 ? "pointer-events-none opacity-50" : ""
                 }`}
               >
@@ -110,7 +109,7 @@ export default async function ExportPage({
           </div>
 
           {bundle ? (
-            <p className="mt-3 font-mono text-[9px] uppercase tracking-[0.08em] text-muted">
+            <p className="mt-4 text-xs text-muted">
               {bundle.claims.length} confirmed{" "}
               {bundle.claims.length === 1 ? "claim" : "claims"} ·{" "}
               {bundle.excluded.length} excluded · {bundle.audit.length} audit
@@ -130,39 +129,38 @@ export default async function ExportPage({
 
       {blockers.length > 0 ? (
         <section
-          className="mt-7 border border-flag bg-paper p-5"
+          className="mt-8 border border-flag bg-paper p-5 sm:p-6"
           aria-labelledby="blocked-heading"
         >
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="field-label text-flag-ink">Export blocked</p>
-              <h2
-                id="blocked-heading"
-                className="mt-1 font-serif text-xl text-ink"
-              >
+              <h2 id="blocked-heading" className="heading-2 mt-1">
                 This record is not ready to leave
               </h2>
             </div>
             <span className="chip chip-flag">{blockers.length} blockers</span>
           </div>
-          <p className="mt-2 max-w-2xl text-xs leading-5 text-muted">
+          <p className="dense-text mt-2 max-w-2xl text-muted">
             A pack that silently omits a confirmed claim would be worse than no
             pack. Fix these in the record, then come back.
           </p>
-          <ul className="mt-3 space-y-2">
+          <ul className="mt-4 space-y-2.5">
             {blockers.map((blocker) => (
               <li
                 key={`${blocker.code}-${blocker.claimId ?? ""}`}
-                className="border-l-[3px] border-flag bg-wash px-3.5 py-2.5 text-xs leading-5"
+                className="border-l-[3px] border-flag bg-wash px-4 py-3"
               >
-                <span className="font-mono text-[9px] uppercase tracking-[0.1em] text-flag-ink">
+                <span className="text-xs font-semibold uppercase tracking-[0.08em] text-flag-ink">
                   {blocker.code.replaceAll("_", " ")}
                 </span>
-                <p className="mt-0.5 text-muted">{blocker.message}</p>
+                <p className="mt-1 text-sm leading-6 text-muted">
+                  {blocker.message}
+                </p>
                 {blocker.claimId ? (
                   <Link
                     href={`/review/${blocker.claimId}`}
-                    className="mt-1 inline-block font-mono text-[10px] uppercase tracking-[0.08em] text-tide hover:underline"
+                    className="mt-2 inline-block text-sm font-medium text-tide link-underline"
                   >
                     Open claim in review →
                   </Link>
@@ -172,10 +170,18 @@ export default async function ExportPage({
           </ul>
         </section>
       ) : (
-        <section className="mt-10 border-t border-line pt-2" aria-label="Export preview">
-          <div className="flex flex-wrap items-center justify-between gap-3 py-4">
-            <p className="field-label">Preview · the same receipts and appendix</p>
-            <p className="font-mono text-[9px] uppercase tracking-[0.08em] text-muted">
+        <section
+          className="mt-12 border-t border-line pt-2"
+          aria-label="Export preview"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-3 py-5">
+            <div>
+              <h2 className="heading-3">Preview</h2>
+              <p className="mt-1 text-xs text-muted">
+                The same receipts and appendix that leave in the file.
+              </p>
+            </div>
+            <p className="text-xs text-muted">
               Generated {bundle ? formatTimestamp(bundle.generatedAt) : ""}
             </p>
           </div>

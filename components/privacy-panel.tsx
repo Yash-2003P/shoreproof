@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { setPeopleVisible } from "@/app/(app)/cleanups/actions";
+import { Disclosure } from "@/components/disclosure";
 import type { PhotoSummary } from "@/lib/types";
 import type { ActionState } from "@/lib/validation";
 
@@ -22,7 +23,7 @@ function PrivacyToggle({
   );
 
   return (
-    <form action={formAction} className="border-b border-line py-2 last:border-0">
+    <form action={formAction} className="border-b border-line py-3 last:border-0">
       <div className="flex items-center justify-between gap-2">
         <span className="field-label">{label}</span>
         <span
@@ -35,28 +36,28 @@ function PrivacyToggle({
       </div>
       <input type="hidden" name="photoId" value={photo.id} />
       <input type="hidden" name="pairPath" value={pairPath} />
-      <label className="mt-2 flex cursor-pointer items-start gap-2">
+      <label className="mt-2.5 flex cursor-pointer items-start gap-2.5">
         <input
           type="checkbox"
           name="peopleVisible"
           value="1"
           defaultChecked={photo.people_visible === 1}
-          className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--tide)]"
+          className="mt-0.5 shrink-0 accent-[var(--tide)]"
         />
-        <span className="text-[11px] leading-4 text-muted">
+        <span className="text-xs leading-5 text-muted">
           Anyone identifiable is visible. Marking this blocks confirm, export,
           and publish for the pair.
         </span>
       </label>
       <button
         type="submit"
-        className="btn btn-ghost mt-2 h-8 min-h-8 px-2"
+        className="btn btn-ghost mt-2.5"
         disabled={pending}
       >
         {pending ? "Saving…" : `Save ${label.toLowerCase()} flag`}
       </button>
       {state.message ? (
-        <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.08em] text-tide">
+        <p className="mt-2 text-xs text-tide" role="status">
           {state.message}
         </p>
       ) : null}
@@ -77,20 +78,23 @@ export function PrivacyPanel({
     before?.people_visible === 1 || after?.people_visible === 1;
 
   return (
-    <section className="panel p-4">
-      <div className="flex items-center justify-between gap-2">
-        <p className="field-label">Privacy</p>
-        <span className="chip chip-tide">Metadata stripped</span>
-      </div>
-
-      <div className="mt-2">
-        <div className="flex items-center justify-between gap-2 border-b border-line py-2">
+    <Disclosure
+      title="Privacy"
+      meta={
+        anyPeople
+          ? "People visible · confirmation blocked"
+          : "No people flagged · metadata stripped"
+      }
+      defaultOpen
+    >
+      <div>
+        <div className="flex items-center justify-between gap-2 border-b border-line py-2.5">
           <span className="field-label">Original upload</span>
-          <span className="mono text-[10px] text-ink">Discarded</span>
+          <span className="text-sm text-ink">Discarded</span>
         </div>
-        <div className="flex items-center justify-between gap-2 border-b border-line py-2">
+        <div className="flex items-center justify-between gap-2 border-b border-line py-2.5">
           <span className="field-label">Served file</span>
-          <span className="mono text-[10px] text-ink">Sanitized JPEG</span>
+          <span className="text-sm text-ink">Sanitized JPEG</span>
         </div>
 
         {before ? (
@@ -101,12 +105,12 @@ export function PrivacyPanel({
         ) : null}
 
         {!before && !after ? (
-          <p className="py-2 text-xs leading-5 text-muted">
+          <p className="py-2.5 text-xs leading-5 text-muted">
             Add a photo to record the people-visible answer.
           </p>
         ) : null}
 
-        <div className="flex items-center justify-between gap-2 border-t border-line pt-2">
+        <div className="flex items-center justify-between gap-2 border-t border-line pt-2.5">
           <span className="field-label">Public use</span>
           <span className={`chip ${anyPeople ? "chip-flag" : "text-muted"}`}>
             {anyPeople ? "Blocked" : "After review"}
@@ -118,6 +122,6 @@ export function PrivacyPanel({
         EXIF and GPS are stripped before a photo is stored. The original bytes
         are never written to disk.
       </p>
-    </section>
+    </Disclosure>
   );
 }
